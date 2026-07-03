@@ -13,6 +13,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(CFITSIO REQUIRED IMPORTED_TARGET cfitsio)
 pkg_check_modules(GSL REQUIRED IMPORTED_TARGET gsl)
 pkg_check_modules(NLOHMANN_JSON REQUIRED IMPORTED_TARGET nlohmann_json)
+pkg_check_modules(CURL REQUIRED IMPORTED_TARGET libcurl)
 
 add_library(mpfit STATIC extern/mpfit/mpfit.c)
 target_include_directories(mpfit PUBLIC extern/mpfit)
@@ -32,5 +33,12 @@ add_executable(sedfit
   src/texval.cpp
   src/results.cpp
   src/util.cpp
+  src/http.cpp
+  src/votable.cpp
 )
-target_link_libraries(sedfit PRIVATE mpfit PkgConfig::CFITSIO PkgConfig::GSL PkgConfig::NLOHMANN_JSON)
+target_link_libraries(sedfit PRIVATE mpfit PkgConfig::CFITSIO PkgConfig::GSL PkgConfig::NLOHMANN_JSON PkgConfig::CURL)
+
+# --- query-layer smoke test (temporary; remove once wired into the driver) ---
+add_executable(qtest EXCLUDE_FROM_ALL src/qtest.cpp src/http.cpp src/votable.cpp src/catalog_registry.cpp src/util.cpp)
+target_link_libraries(qtest PRIVATE PkgConfig::CURL)
+target_include_directories(qtest PRIVATE src)
