@@ -34,6 +34,10 @@ struct PhotometryTable {
   std::vector<PhotEntry> entries;
 
   static PhotometryTable read(const std::string& filename);
+
+  // Write in photometric_table.sl format: "# RA/DEC" + reddening header lines,
+  // then the print_struct table (right-aligned, "%S"-formatted numbers).
+  void write(const std::string& filename) const;
 };
 
 // Header of photometry_results.txt: "# key = value; key = value;" lines.

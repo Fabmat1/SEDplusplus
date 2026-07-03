@@ -35,10 +35,8 @@ add_executable(sedfit
   src/util.cpp
   src/http.cpp
   src/votable.cpp
+  src/catalog_registry.cpp
+  src/reddening.cpp
+  src/query.cpp
 )
 target_link_libraries(sedfit PRIVATE mpfit PkgConfig::CFITSIO PkgConfig::GSL PkgConfig::NLOHMANN_JSON PkgConfig::CURL)
-
-# --- query-layer smoke test (temporary; remove once wired into the driver) ---
-add_executable(qtest EXCLUDE_FROM_ALL src/qtest.cpp src/http.cpp src/votable.cpp src/catalog_registry.cpp src/util.cpp)
-target_link_libraries(qtest PRIVATE PkgConfig::CURL)
-target_include_directories(qtest PRIVATE src)

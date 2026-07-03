@@ -100,32 +100,66 @@ Target = reproduce the three `ref_*/photometry.dat` fixtures.
   DELVE), Gaia XP box filters (`box_from_gaia`), IUE/MAST spectra downloads,
   SIMBAD name resolution (we always pass ra/dec).
 
-## Status (updated 2026-07-03)
+## Status (COMPLETE — 2026-07-04)
+
+The query layer is implemented, integrated into `sedfit`, and validated against
+the three fixtures: **every fetchable fixture row reproduces byte-for-byte**
+(flag, magnitude at full precision, uncertainty, angular distance, catalogue).
 
 - [x] Study `query_photometry.sl` + helpers, confirm network + libcurl (8.21.0).
-- [x] **http foundation** — `src/http.{hpp,cpp}`: libcurl RAII wrapper (GET/POST,
-      timeouts, throttle, probe, url_encode). Live-verified.
+- [x] **http foundation** — `src/http.{hpp,cpp}`: libcurl wrapper (GET/POST,
+      timeouts, throttle, probe, url_encode).
 - [x] **votable parser** — `src/votable.{hpp,cpp}`: multi-TABLE parser (by ID),
-      FIELD/TABLEDATA → string rows, `<TD/>` + entity handling. Live-verified:
-      a bulk VizieR query for star 1 returns all 6 test catalogs parsed cleanly.
-- [x] **catalog registry** — `src/catalog_table.inc` (308 rows, auto-generated
-      by `scratchpad/extract_catalogs.py`) + `src/catalog_registry.{hpp,cpp}`
-      (parse, `is_vizier_catalogue`, dec-range selection). 76 catalogues,
-      58 VizieR; 173 VizieR rows in-range at star 1's dec.
-- [x] Confirmed: VizieR rounds `_r` to 3 dp, so angular distance must be
-      **recomputed** from the ra/dec columns (matches fixture full precision),
-      exactly as `parse_vizier_votable_multi` does.
-- [ ] **reddening** (IRSA DUST → meanSFD/meanSandF) — `src/reddening.{hpp,cpp}`.
-- [ ] **orchestrator + flag logic** — `src/query.{hpp,cpp}`. THE big remaining
-      piece: still needs a close read of `query_photometry.sl` lines 721–2062
-      (GALEX Wall+2019 correction, Gaia G correction, WISE disk blending, DR
-      redundancy dedup, per-catalog flags). Registry column-collection per
-      catalogue and the single bulk request are understood; the postprocessing
-      is not yet ported.
-- [ ] **MAST PS1_DR2 TAP** (star 1 needs PS1_DR2 rows; VizieR has II/349/ps1).
-- [ ] **`.dat` writer** (extend `PhotometryTable`) + **`--query` driver** in
-      `main.cpp` (gate on `photometry.dat` absent, like the template).
-- [ ] **validate** produced `.dat` vs the three fixtures.
+      FIELD name+datatype, TABLEDATA → string rows, `<TD/>` + entity handling.
+- [x] **catalog registry** — `src/catalog_table.inc` (308 rows) +
+      `src/catalog_registry.{hpp,cpp}`.
+- [x] **reddening** — `src/reddening.{hpp,cpp}` (IRSA DUST). meanSFD/stdSFD/
+      meanSandF/stdSandF match all three fixture headers exactly.
+- [x] **orchestrator + flag logic** — `src/query.{hpp,cpp}`. One bulk VizieR
+      VOTable request for all in-dec VizieR catalogues, byte-sorted per-catalogue
+      processing (matches `array_sort` order, which the `-3`/redundancy rules
+      depend on), closest-in-radius selection (flat cut like the parser, then
+      true `angular_separation`), and the full per-catalogue quality logic:
+      2MASS Rflg/Cflg/Xflg/snr; Gaia `E(BP/RP)Corr` gate + saturation correction
+      + `round2(·, round_err(e).digit-1)`; GALEX Wall+2019 (Eq. 5) + artefact
+      bits; APASS→`-5` with 0.04 quadrature; SDSS `q_mode`/`Q` + `mode==1`
+      primary filter; PS1-DR1 `flag=1` redundant + Qual bits; unWISE flux→mag +
+      background-subtraction error; CatWISE `-3` when unWISE present; AllWISE
+      always `-3`; IGAPS `errBits`; plus the flag==0 duplicate resolution.
+      `round_err`/`round2` reused from `texval` (round2 kept in `util`, S-Lang
+      multiply form, for bit-exact rounding). `radec2lb`/`angular_separation`
+      ported for disk-blending + distances.
+- [x] **non-VizieR TAP** — `tap_query` (POST REQUEST/LANG/FORMAT/QUERY to
+      `<url>/sync`, parse VOTable): PS1_DR2 (MAST), DELVE_DR2 (NOAO datalab),
+      GPS/LAS/GCS/DXS/UDS_DR11 (ROE WSA). MAST float32 columns re-quantised to
+      their shortest float decimal (`Row::dstore`) so `%S` matches the fixture.
+- [x] **`.dat` writer** — `PhotometryTable::write()` (reuses `slang_repr` +
+      `write_table` from `results`; header `%.10f`/`%.4f`, `-nan` for masked).
+- [x] **`--query` driver** — `sedfit --query <ra> <dec> <out.dat>` (standalone)
+      and an auto-query gate when `photometry.dat` is absent and ra/dec known
+      (mirrors the template's `stat_file(...)==NULL`).
+- [x] **validate** — see below. `qtest` target removed; `src/qtest.cpp` deleted.
 
-Temporary `qtest` target (`src/qtest.cpp`, `EXCLUDE_FROM_ALL`) exercises the
-foundation on live data; remove once the driver is wired in.
+### Validation result (live queries vs `validation/ref_*/photometry.dat`)
+
+All rows that can be fetched match byte-for-byte. The only diffs are external:
+
+- **UKIDSS** (`GPS_DR11` star1 J/H/K, `LAS_DR11` star3 Y/J/H/K): the ROE WSA TAP
+  (`http://tap.roe.ac.uk/wsa`) currently returns **zero rows for anonymous
+  access even on an unfiltered `TOP 3`** — a service/auth state, not a query
+  bug. The code path is implemented identically to the S-Lang and will return
+  data when the service does.
+- **star2 `DELVE_DR2`** (4 extra rows): the bright target is not in DELVE
+  (saturated); a faint neighbour at ~12.4″ is now the closest source in the
+  ±36″ box, so it is matched (i,z at flag 0, g null→`-1`). This is exactly what
+  `query_photometry.sl` produces against today's DELVE catalogue; the fixture
+  predates those faint detections (or datalab was unreachable at capture). NB:
+  this would perturb a *fresh* star2 fit — it is data drift, not a port defect.
+
+### Not ported (deferred; no fixture needs them)
+
+Gaia XP / IUE / MAST box-filter spectra (`box_from_gaia`, `average_boxes`),
+SIMBAD name resolution (we pass ra/dec), and the surveys absent from the three
+fixtures (Skymapper, JPLUS, SPLUS, DES/DECaPS/SMASH, VISTA/VHS/VIKING/…, HSC,
+Spitzer/SWIFT/XMM, …). The per-catalogue dispatch in `process_filter` is
+structured so these slot in as additional branches.

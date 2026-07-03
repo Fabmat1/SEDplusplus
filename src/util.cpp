@@ -3,9 +3,16 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <sstream>
 
 namespace sed {
+
+double round2(double val, int dig) {
+  // S-Lang: round(val*10^(-dig))*10^dig; C round() ties away from zero.
+  return std::round(val * std::pow(10.0, -dig)) * std::pow(10.0, dig);
+}
 
 double interp_linear(double x, const dvec& xp, const dvec& yp) {
   const size_t n = xp.size();

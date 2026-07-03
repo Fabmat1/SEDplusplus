@@ -1,10 +1,12 @@
 #include "photometry_table.hpp"
 
 #include <cmath>
+#include <cstdio>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 
+#include "results.hpp"
 #include "util.hpp"
 
 namespace sed {
@@ -68,6 +70,44 @@ PhotometryTable PhotometryTable::read(const std::string& filename) {
     t.entries.push_back(std::move(e));
   }
   return t;
+}
+
+void PhotometryTable::write(const std::string& filename) const {
+  std::ofstream os(filename);
+  if (!os) throw std::runtime_error("cannot write " + filename);
+  char buf[128];
+  std::snprintf(buf, sizeof(buf), "# RA = %.10f DEC = %.10f\n",
+                ra.value_or(0.0), dec.value_or(0.0));
+  os << buf;
+  if (reddening.meanSFD) {
+    std::snprintf(buf, sizeof(buf), "# meanSFD = %.4f stdSFD = %.4f\n",
+                  *reddening.meanSFD, reddening.stdSFD.value_or(0.0));
+    os << buf;
+  }
+  if (reddening.meanSandF) {
+    std::snprintf(buf, sizeof(buf), "# meanSandF = %.4f stdSandF = %.4f\n",
+                  *reddening.meanSandF, reddening.stdSandF.value_or(0.0));
+    os << buf;
+  }
+  if (reddening.meanStilism) {
+    std::snprintf(buf, sizeof(buf), "# meanStilism = %.4f stdStilism = %.4f\n",
+                  *reddening.meanStilism, reddening.stdStilism.value_or(0.0));
+    os << buf;
+  }
+  std::vector<std::vector<std::string>> cols(8);
+  for (const auto& e : entries) {
+    cols[0].push_back(std::to_string(e.flag));
+    cols[1].push_back(e.system);
+    cols[2].push_back(e.passband);
+    cols[3].push_back(slang_repr(e.magnitude));
+    cols[4].push_back(slang_repr(e.uncertainty));
+    cols[5].push_back(e.type);
+    cols[6].push_back(slang_repr(e.angu_dist_arcsec));
+    cols[7].push_back(e.vizier_catalog);
+  }
+  write_table(os, {"flag", "system", "passband", "magnitude", "uncertainty",
+                   "type", "angu_dist_arcsec", "VizieR_catalog"},
+              cols);
 }
 
 double ResultsHeader::num(const std::string& k) const {

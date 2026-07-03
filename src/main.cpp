@@ -17,6 +17,8 @@
 #include "fitter.hpp"
 #include "modelgrid.hpp"
 #include "photometry_table.hpp"
+#include "query.hpp"
+#include "reddening.hpp"
 #include "results.hpp"
 #include "stellar.hpp"
 #include "texval.hpp"
@@ -39,12 +41,33 @@ std::string fmt(const char* f, double v) {
   return buf;
 }
 
+// Build photometry.dat from (ra, dec): remote query + IRSA reddening, then
+// write in photometric_table.sl format. Mirrors query_photometry followed by
+// query_reddening in the template.
+void build_photometry(double ra, double dec, const std::string& outfile) {
+  PhotometryTable phot = query_photometry(ra, dec);
+  try {
+    phot.reddening = query_reddening(ra, dec);
+  } catch (const std::exception& e) {
+    std::fprintf(stderr, "Warning: reddening query failed: %s\n", e.what());
+  }
+  phot.write(outfile);
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
   auto t0 = std::chrono::steady_clock::now();
+  // Standalone query mode: sedfit --query <ra> <dec> <out.dat>
+  if (argc == 5 && std::string(argv[1]) == "--query") {
+    build_photometry(std::atof(argv[2]), std::atof(argv[3]), argv[4]);
+    std::fprintf(stderr, "- wrote %s\n", argv[4]);
+    return 0;
+  }
   if (argc != 2) {
-    std::fprintf(stderr, "usage: sedfit <config.json>\n");
+    std::fprintf(stderr,
+                 "usage: sedfit <config.json>\n"
+                 "       sedfit --query <ra> <dec> <out.dat>\n");
     return 1;
   }
   Config cfg = Config::load(argv[1]);
@@ -103,11 +126,17 @@ int main(int argc, char** argv) {
 
   // ---------------- photometry
   const std::string photfile = base_in + "photometry.dat";
-  if (!std::filesystem::exists(photfile))
-    throw std::runtime_error(
-        photfile +
-        " not found; remote photometry queries are not implemented in this "
-        "version");
+  if (!std::filesystem::exists(photfile)) {
+    // Mirror the template's stat_file(...)==NULL gate: query and cache it.
+    if (!cfg.ra || !cfg.dec)
+      throw std::runtime_error(
+          photfile +
+          " not found and no ra/dec available to query it (need cached "
+          "photometry_results.txt or ra/dec in the config).");
+    std::fprintf(stderr, "- querying photometry for RA=%.6f DEC=%.6f ...\n",
+                 *cfg.ra, *cfg.dec);
+    build_photometry(*cfg.ra, *cfg.dec, photfile);
+  }
   PhotometryTable phot = PhotometryTable::read(photfile);
   if (phot.entries.empty())
     throw std::runtime_error("photometry.dat contains no entries");

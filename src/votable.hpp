@@ -14,11 +14,19 @@ struct Table {
   std::string id;    // TABLE ID attribute ("" if absent)
   std::string name;  // TABLE name attribute ("" if absent)
   std::vector<std::string> fields;               // FIELD names, in order
+  std::vector<std::string> datatypes;            // FIELD datatype, aligned
   std::vector<std::vector<std::string>> rows;    // cells, aligned to fields
 
   // Column index by exact name, then case-insensitive; -1 if not found.
   int field_index(const std::string& name) const;
   int field_index_ci(const std::string& name) const;
+
+  // VOTable datatype of a column ("float", "double", "int", ...); "" if out
+  // of range. A "float" column is single precision, so its shortest decimal
+  // representation is coarser than the widened double (matters for %S output).
+  std::string datatype(int idx) const {
+    return (idx >= 0 && idx < (int)datatypes.size()) ? datatypes[idx] : "";
+  }
 };
 
 struct Document {

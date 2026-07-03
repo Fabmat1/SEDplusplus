@@ -31,4 +31,9 @@ double median(dvec a);
 std::string trim(const std::string& s);
 std::vector<std::string> split_ws(const std::string& s);
 
+// ISIS round2(val, dig): round(val*10^-dig)*10^dig (half away from zero).
+// Note the multiply-by-10^dig form is significant for bit-exact results; see
+// round_err in texval.hpp for the companion DIN-1333 error rounding.
+double round2(double val, int dig);
+
 }  // namespace sed

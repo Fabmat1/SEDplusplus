@@ -47,10 +47,10 @@ std::string attr(const std::string& tag, const std::string& key) {
   return tag.substr(p, e - p);
 }
 
-// Parse FIELD names within a table block. Matches "<FIELD" followed by a
-// space/newline (excludes <FIELDref>), reads its name attribute.
-std::vector<std::string> parse_fields(const std::string& block) {
-  std::vector<std::string> fields;
+// Parse FIELD names/datatypes within a table block. Matches "<FIELD" followed
+// by a space/newline (excludes <FIELDref>), reads its name/datatype attributes.
+void parse_fields(const std::string& block, std::vector<std::string>& names,
+                  std::vector<std::string>& datatypes) {
   size_t pos = 0;
   while (true) {
     size_t p = block.find("<FIELD", pos);
@@ -63,10 +63,10 @@ std::vector<std::string> parse_fields(const std::string& block) {
     size_t e = block.find('>', p);
     if (e == std::string::npos) break;
     std::string tag = block.substr(p, e - p);
-    fields.push_back(xml_unescape(attr(tag, "name")));
+    names.push_back(xml_unescape(attr(tag, "name")));
+    datatypes.push_back(attr(tag, "datatype"));
     pos = e + 1;
   }
-  return fields;
 }
 
 // Parse TABLEDATA rows into aligned string cells. Handles <TD>v</TD> and the
@@ -170,7 +170,7 @@ Document parse(const std::string& content) {
     Table t;
     t.id = attr(open_tag, "ID");
     t.name = xml_unescape(attr(open_tag, "name"));
-    t.fields = parse_fields(block);
+    parse_fields(block, t.fields, t.datatypes);
     if (!t.fields.empty()) t.rows = parse_data(block, t.fields.size());
     doc.tables.push_back(std::move(t));
   }
