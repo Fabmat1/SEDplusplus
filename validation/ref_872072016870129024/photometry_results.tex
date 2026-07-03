@@ -1,0 +1,55 @@
+\documentclass{standalone}
+\usepackage{amsmath,txfonts,color}
+\usepackage[colorlinks=true,urlcolor=black]{hyperref}
+\begin{document}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lr}
+\hline\hline
+Object: Gaia DR3 872072016870129024 & 68\% confidence interval\\
+\hline
+Color excess $E(B-V)$ from \href{https://ui.adsabs.harvard.edu/abs/1998ApJ...500..525S/abstract}{SFD (1998)} & $0.0405 \pm 0.0007$\,mag \\
+Color excess $E(B-V)$ from \href{https://ui.adsabs.harvard.edu/abs/2011ApJ...737..103S/abstract}{S\&F (2011)} & $0.0348 \pm 0.0006$\,mag \\
+\hline
+Color excess $E(44-55)$ & $0.00008^{+0.03122}_{-{\color{red}0.00008}}$\,mag \\
+Extinction parameter $R(55)$ (fixed) & $3.02$ \\
+Angular diameter $\log(\Theta\,\mathrm{(rad)})$ & $-11.3740^{+0.0330}_{-0.0026}$ \\
+Parallax $\varpi$ ({\it Gaia}, $\text{RUWE}=1.22$) & $0.67 \pm 0.04$\,mas \\
+Distance $d$ ({\it Gaia}, mode) & $\left(1.49^{+0.10}_{-0.08}\right)\times10^{3}$\,pc \\
+Distance $d$ ({\it Gaia}, median) & $\left(1.50^{+0.10}_{-0.09}\right)\times10^{3}$\,pc \\
+\hline
+\multicolumn{2}{l}{Component 1:} \\
+Effective temperature $T_{\mathrm{eff}}$ (prescribed) & $29900 \pm 500$\,K \\
+Surface gravity $\log (g\,\mathrm{(cm\,s^{-2})})$ (prescribed) & $5.30 \pm 0.08$ \\
+Microturbulence $\xi$ (fixed) & $0$\,km\,s$^{-1}$ \\
+Metallicity $z$ (fixed) & $0$\,dex \\
+Helium abundance $\log(n(\textnormal{He}))$ (prescribed) & $-5.05^{+\phantom{0}0.06}_{--0.05}$ \\
+Radius $R = \Theta/(2\varpi)$ (mode) & $0.142^{+0.012}_{-0.010}$\,$R_\odot$ \\
+\phantom{Radius $R = \Theta/(2\varpi)$ }(median) & $0.144^{+0.012}_{-0.010}$\,$R_\odot$ \\
+Mass $M = g R^2/G$ (mode) & $0.143^{+0.040}_{-0.029}$\,$M_\odot$ \\
+\phantom{Mass $M = g R^2/G$ }(median) & $0.15^{+0.05}_{-0.04}$\,$M_\odot$ \\
+Luminosity $L = (R/R_\odot)^2(T_\mathrm{eff}/T_{\mathrm{eff},\odot})^4$ (mode) & $14.3^{+2.6}_{-2.0}$\,$L_\odot$ \\
+\phantom{Luminosity $L/L_\odot = (R/R_\odot)^2(T_\mathrm{eff}/T_{\mathrm{eff},\odot})^4$ }(median) & $14.8^{+2.8}_{-2.1}$ \\
+Gravitational redshift $\varv_\mathrm{grav} = GM/(Rc)$ & $0.65^{+0.14}_{-0.12}$\,km\,s${}^{-1}$ \\
+Escape velocity $\varv_\mathrm{esc} = \sqrt{2gR}$ & $630^{+70}_{-60}$\,km\,s${}^{-1}$ \\
+\hline
+\multicolumn{2}{l}{Component 2:} \\
+Effective temperature $T_{\mathrm{eff}}$ & $5700 \pm 60$\,K \\
+Surface gravity $\log (g\,\mathrm{(cm\,s^{-2})})$ & $2.0^{+1.0}_{-{\color{red}0.0}}$ \\
+Microturbulence $\xi$ (fixed) & $0$\,km\,s$^{-1}$ \\
+Metallicity $z$ (fixed) & $0$\,dex \\
+Helium abundance $\log(n(\textnormal{He}))$ (fixed) & $-1.05$ \\
+Surface ratio $A_\mathrm{eff}/A_{\mathrm{eff,}1}$ & $35.6^{+0.7}_{-5.5}$ \\
+Radius $R = (A_\mathrm{eff}/A_{\mathrm{eff,}1})^{1/2}\Theta/(2\varpi)$ (mode) & $0.83^{+0.08}_{-0.07}$\,$R_\odot$ \\
+\phantom{Radius $R = (A_\mathrm{eff}/A_{\mathrm{eff,}1})^{1/2}\Theta/(2\varpi)$ }(median) & $0.84 \pm 0.08$\,$R_\odot$ \\
+Mass $M = g R^2/G$ (mode) & $0.0025^{+0.0048}_{-0.0011}$\,$M_\odot$ \\
+\phantom{Mass $M = g R^2/G$ }(median) & $0.0033^{+0.0214}_{-0.0010}$\,$M_\odot$ \\
+Luminosity $L = (R/R_\odot)^2(T_\mathrm{eff}/T_{\mathrm{eff},\odot})^4$ (mode) & $0.65^{+0.14}_{-0.11}$\,$L_\odot$ \\
+\phantom{Luminosity $L/L_\odot = (R/R_\odot)^2(T_\mathrm{eff}/T_{\mathrm{eff},\odot})^4$ }(median) & $0.67^{+0.14}_{-0.12}$ \\
+Gravitational redshift $\varv_\mathrm{grav} = GM/(Rc)$ & $0.0020^{+0.0036}_{-0.0005}$\,km\,s${}^{-1}$ \\
+Escape velocity $\varv_\mathrm{esc} = \sqrt{2gR}$ & $34^{+24}_{-\phantom{0}5}$\,km\,s${}^{-1}$ \\
+\hline
+Generic excess noise $\delta_\textnormal{excess}$ & $0.000$\,mag \\
+Reduced $\chi^2$ at the best fit & $0.68$ \\
+\hline
+\end{tabular}
+\end{document}

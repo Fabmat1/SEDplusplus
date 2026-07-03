@@ -1,0 +1,25 @@
+# RA = 145.97700000; DEC = 27.78290000; norm_chi_red = 0.0000; chisqr_reduced = 0.472;
+# nmag_good = 16; grid = sdB/processed;
+# ruwe = 1.04; ipd_gof_harmonic_amplitude = 0.025; visibility_periods_used = 19; parallax = 1.56; parallax_error = 0.0541; 
+# meanSFD = 0.0205; meanSandF = 0.0176; 
+index            name                 value   freeze                        min                       max              conf_min               conf_max              buf_below            buf_above                     tex
+    1        logtheta   -10.858612250960388        0                      -18.0                      -2.0   -10.860203965777622    -10.857019203804361    0.44623725213889864   0.5535637002377726   $-10.8586 \pm 0.0016$
+    2         E_44m55   0.03306737754301859        0                        0.0                       5.0   0.03049013586870326   0.035647639087785746   0.006098027173740652    0.992870472182443     $0.0331 \pm 0.0026$
+    3            R_55                  3.02        1                        2.5                       6.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+    4        c1_vsini                   0.0        1                        0.0                    1000.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+    5         c1_zeta                   0.0        1                        0.0                    1000.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+    6         c1_vrad                   0.0        1                  -300000.0                  300000.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+    7         c1_teff             29232.555        1                  28811.428                 29653.683                  -nan                   -nan                   -nan                 -nan                  \ldots
+    8         c1_logg             5.5231117        1                  5.4471857                 5.5990378                  -nan                   -nan                   -nan                 -nan                  \ldots
+    9           c1_xi                   0.0        1                        0.0                       0.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+   10            c1_z                   0.0        1                       -1.0                       1.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+   11           c1_HE            -3.7499743        1                 -3.8441735                -3.6557751                  -nan                   -nan                   -nan                 -nan                  \ldots
+   12    c1_sur_ratio                   1.0        1                        1.0                       1.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+   13         bb_teff                   0.0        1                        0.0                     1e+06                  -nan                   -nan                   -nan                 -nan                  \ldots
+   14    bb_sur_ratio                   0.0        1                        0.0                    1500.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+   15        bb2_teff                   0.0        1                        0.0                     1e+06                  -nan                   -nan                   -nan                 -nan                  \ldots
+   16   bb2_sur_ratio                   0.0        1                        0.0                    1500.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+   17         dummy_1                  1.56        1                        0.0                     200.0                  -nan                   -nan                   -nan                 -nan                  \ldots
+   18         dummy_2   0.19686191111941911        1   -1.7976931348623157e+308   1.7976931348623157e+308                  -nan                   -nan                   -nan                 -nan                  \ldots
+   19         dummy_3    25.496772326339183        1   -1.7976931348623157e+308   1.7976931348623157e+308                  -nan                   -nan                   -nan                 -nan                  \ldots
+   20         dummy_4   0.47137599969616595        1   -1.7976931348623157e+308   1.7976931348623157e+308                  -nan                   -nan                   -nan                 -nan                  \ldots

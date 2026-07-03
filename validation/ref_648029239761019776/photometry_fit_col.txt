@@ -1,0 +1,3 @@
+                diff               diff_err   passband    system   flag    VizieR_catalog
+0.033744987161416634   0.028722813232690145        BmV   Johnson      0   II/168/ubvmeans
+0.014910150694402047   0.028722813232690145        UmB   Johnson      0   II/168/ubvmeans

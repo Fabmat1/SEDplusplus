@@ -1,0 +1,83 @@
+// The photometric_fitting flow: chi-square minimization with mpfit (same
+// engine and configuration as ISIS), initial guesses, outlier removal,
+// excess-noise normalization (norm_chi_red), and single-parameter confidence
+// limits ported from ISIS fit-chisqrconf.c (delta chi^2 = 1.00/2.71/6.63,
+// tolerance 1e-3).
+#pragma once
+
+#include <limits>
+#include <string>
+#include <vector>
+
+#include "fitfun.hpp"
+#include "photometry_table.hpp"
+#include "util.hpp"
+
+namespace sed {
+
+struct FitResults {
+  std::vector<int> index;  // 1-based parameter indices (ISIS convention)
+  std::vector<std::string> name;
+  dvec value;
+  std::vector<int> freeze;
+  dvec min, max;
+  dvec conf_min, conf_max;
+  dvec buf_below, buf_above;
+  std::vector<std::string> tex;
+  double chisqr_red = std::numeric_limits<double>::quiet_NaN();
+  double norm_chi_red = 0.0;
+};
+
+struct ParSet {
+  std::vector<std::string> name;
+  dvec value;
+  std::vector<int> freeze;
+  dvec min, max;  // only used by par_full
+};
+
+class Fitter {
+ public:
+  Fitter(FitFunction& fun, PhotometryTable& phot);
+
+  // The full photometric_fitting equivalent. conf_level: -1,0,1,2.
+  // remove_outliers: sigma threshold (0 disables). Updates phot flags (-2)
+  // for removed outliers.
+  FitResults run(const ParSet& par, const ParSet& par_full, int conf_level,
+                 double remove_outliers, bool verbose);
+
+  // Re-minimize with the current dataset (used by the prescribed-parameter
+  // error propagation); returns best statistic.
+  double refit();
+  // Evaluate statistic at current parameter values.
+  double eval_statistic();
+
+  FitFunction& fun() { return fun_; }
+  const std::vector<int>& ind_m() const { return ind_m_; }
+  const std::vector<int>& ind_n() const { return ind_n_; }
+  int n_data() const { return int(ind_m_.size()); }
+  int num_free_params() const;
+
+  double norm_chi_red() const { return norm_chi_red_; }
+
+ private:
+  void build_dataset();  // data/err arrays from phot + ZP_err (+norm)
+  void select_data(bool verbose);
+  double fit_once();  // mpfit over free params, returns statistic
+  double statistic_at_current() ;
+  void model_vector(const std::vector<double>& fullpar, dvec& out) const;
+  // conf-limit search for free parameter ipar; returns (lo, hi)
+  int conf(int ipar, double delta_stat, double tol, double& lo, double& hi);
+  int find_limit(int ipar, double ptest, double prange, double pbest,
+                 double min_chisqr, double delta, double tol,
+                 double& conf_limit);
+
+  FitFunction& fun_;
+  PhotometryTable& phot_;
+  std::vector<int> ind_m_;    // indices into phot entries (flag==0, computable)
+  std::vector<int> ind_n_;    // indices into db entries
+  std::vector<int> mag_ind_;  // magnitude rows needed
+  dvec data_, err_;           // observed magnitudes and total uncertainties
+  double norm_chi_red_ = 0.0;
+};
+
+}  // namespace sed

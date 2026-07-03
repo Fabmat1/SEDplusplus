@@ -1,0 +1,293 @@
+Loading /home/fabian/Projects/ISIS_install/src/stellar_isisscripts/share/stellar_isisscripts.sl
+Warning in 'query_astrometry': The quality indicator 'ipd_gof_harmonic_amplitude' (0.136563) exceeds its recommended threshold (0.1).
+Information from 'query_photometry': URL offline: https://datalab.noirlab.edu/tap
+Information from 'query_photometry': Queried catalogue II/335/galex_ais: Found one target.
+Information from 'query_photometry': Queried catalogue J/ApJS/96/461/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/59B/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/168/ubvmeans: Found nothing.
+Information from 'query_photometry': Queried catalogue II/237/colors: Found nothing.
+Information from 'query_photometry': Queried catalogue II/7A/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/133/2502/phot: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/287/867/table1: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/431/240/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/453/1879/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/453/1879/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/459/4343/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJS/123/639/ubv: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/133/2393/photo: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/119/241/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJ/654/915/fors1: Found nothing.
+Information from 'query_photometry': Queried catalogue J/A+A/493/959/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJ/783/56/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/485/3042/table4: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AcA/50/307/phot: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/128/1606/lmcps: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/361/1055/table1: Found nothing.
+Information from 'query_photometry': Queried catalogue I/320/spm4: Found nothing.
+Information from 'query_photometry': Queried catalogue III/137/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/215/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/A+A/580/A23/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/169/main: Found nothing.
+Information from 'query_photometry': Queried catalogue V/147/sdss12: Found one target.
+Information from 'query_photometry': Queried catalogue II/336/apass9: Found one target.
+Information from 'query_photometry': Queried catalogue II/347/kids_dr3: Found nothing.
+Information from 'query_photometry': Queried catalogue II/350/vstatlas: Found nothing.
+Information from 'query_photometry': Queried catalogue Skymapper_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue PS1_DR2: Found one target.
+Information from 'query_photometry': Queried catalogue II/349/ps1: Found one target.
+Information from 'query_photometry': Queried catalogue J/ApJS/249/18/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue V/165/igapsdr1: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/144/24/kisdr2: Found nothing.
+Information from 'query_photometry': Queried catalogue I/350/gaiaedr3: Found one target.
+Information from 'query_photometry': Queried catalogue I/311/hip2: Found nothing.
+Information from 'query_photometry': Queried catalogue I/259/tyc2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/262/batc: Found nothing.
+Information from 'query_photometry': Queried catalogue JPLUS_DR3: Found nothing.
+Information from 'query_photometry': Queried catalogue II/380/splusdr4: Found nothing.
+Information from 'query_photometry': Queried catalogue DELVE_DR2: Found one target.
+Information from 'query_photometry': Queried catalogue DES_DR2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/357/des_dr1: Found nothing.
+Information from 'query_photometry': Queried catalogue DECaPS_DR1: Found nothing.
+Information from 'query_photometry': Queried catalogue SMASH_DR2: Found nothing.
+Information from 'query_photometry': Queried catalogue B/denis/denis: Found nothing.
+Information from 'query_photometry': Queried catalogue J/A+A/413/1037/table1: Found nothing.
+Information from 'query_photometry': Queried catalogue II/246/out: Found one target.
+Information from 'query_photometry': Queried catalogue J/AJ/150/176/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue LAS_DR11: Found one target.
+Information from 'query_photometry': Queried catalogue GPS_DR11: Found nothing.
+Information from 'query_photometry': Queried catalogue GCS_DR11: Found nothing.
+Information from 'query_photometry': Queried catalogue DXS_DR11: Found nothing.
+Information from 'query_photometry': Queried catalogue UDS_DR11: Found nothing.
+Error: Unexpected error while executing a SQL query: Invalid object name 'UHSDR3.dbo.uhsSource'.
+Warning in 'tapquery': Could not retrieve data from http://tap.roe.ac.uk/wsa
+Information from 'query_photometry': Queried catalogue UHS_DR3: Found nothing.
+Information from 'query_photometry': Queried catalogue VHS_DR6: Found nothing.
+Information from 'query_photometry': Queried catalogue VIKING_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue VMC_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue VVV_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue VIDEO_DR5: Found nothing.
+Information from 'query_photometry': Queried catalogue II/288/out: Found nothing.
+Information from 'query_photometry': Queried catalogue II/363/unwise: Found one target.
+Information from 'query_photometry': Queried catalogue II/365/catwise: Found one target.
+Information from 'query_photometry': Queried catalogue II/328/allwise: Found one target.
+Information from 'query_photometry': Queried catalogue J/AJ/135/1395/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/293/glimpse: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/459/1403/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/305/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJS/254/11/spikes: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/149/64/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/368/sstsl2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/339/uvotssc1: Found nothing.
+Information from 'query_photometry': Queried catalogue II/356/xmmom41s: Found nothing.
+Information from 'query_photometry': Queried catalogue VI/110/inescat: Found nothing.
+Information from 'query_photometry': Queried catalogue MAST: Found nothing.
+Error: param 11 not set:  value -5.05 lies outside [min, max] interval [-5, -4.9925]
+Warning in 'photometric_fitting': Isis Error
+
+Warning in 'photometric_fitting': Unable to compute synthetic magnitudes for the following observed magnitudes:
+WISE: W3
+WISE: W4
+
+
+Information from 'photometric_fitting': The following observed magnitudes have a 'flag' different from 0 and are thus ignored:
+Johnson: B
+Johnson: V
+PS1: g
+PS1: i
+PS1: r
+PS1: y
+PS1: z
+SDSS: g
+SDSS: i
+SDSS: r
+WISE: W1
+WISE: W1
+WISE: W2
+WISE: W2
+
+Found improved fit, stat= 17.1012 for param[1] = -11.3641
+**** Found improved fit
+Found improved fit, stat= 15.7645 for param[2] = 0.00544118
+**** Found improved fit
+**** Parameter range endpoint 0 is inside the confidence limit
+**** Lower confidence limit didn't converge[2]:  allow wider parameter ranges?
+**** Lower confidence limit didn't converge[1]:  allow wider parameter ranges?
+**** Parameter range endpoint 2 is inside the confidence limit
+**** Lower confidence limit didn't converge[17]:  allow wider parameter ranges?
+flag      system   passband            magnitude    uncertainty        type      angu_dist_arcsec     VizieR_catalog   magnitude_model      chi       uncertainty_total
+   0       2MASS          H               14.526          0.039   magnitude   0.43310293617258294         II/246/out          14.52224   -0.094     0.04026164427839479
+   0       2MASS          J               14.791          0.026   magnitude   0.43310293617258294         II/246/out          14.73980   -1.730     0.02959729717389748
+   0       2MASS          K               14.437          0.059   magnitude   0.43310293617258294         II/246/out          14.47850    0.694     0.05984145720150872
+   0   DELVE_DR2          g            15.068945       0.000574   magnitude   0.48905752275733927          DELVE_DR2          15.06189   -0.353     0.02000823520453516
+   0   DELVE_DR2          i             15.34741       0.000692   magnitude   0.48905752275733927          DELVE_DR2          15.35575    0.417    0.020011968019162933
+   0   DELVE_DR2          r             15.23694       0.000552   magnitude   0.48905752275733927          DELVE_DR2          15.23036   -0.329    0.020007616149856536
+   0   DELVE_DR2          z             15.44277        0.00081   magnitude   0.48905752275733927          DELVE_DR2          15.45084    0.403      0.0200163957794604
+   0       GALEX        FUV                14.17           0.15   magnitude    0.4940543106188693   II/335/galex_ais          14.22327    0.334     0.15937377450509227
+   0       GALEX        NUV               14.503           0.13   magnitude    0.4940543106188693   II/335/galex_ais          14.45292   -0.371     0.13490737563232041
+   0        Gaia          G             15.06628       0.002869   magnitude    0.3484420854460779     I/350/gaiaedr3          15.06923    0.971   0.0030382825740868807
+   0        Gaia        GBP              15.0854       0.004014   magnitude    0.3484420854460779     I/350/gaiaedr3          15.07998   -1.310    0.004136689014175468
+   0        Gaia        GRP   14.987300000000001        0.00465   magnitude    0.3484420854460779     I/350/gaiaedr3          14.98622   -0.227     0.00475631159618459
+   0         PS1          g              15.0711       0.001395   magnitude   0.45197380195996795            PS1_DR2          15.08222    0.483    0.023042266056097865
+   0         PS1          i              15.3377       0.001985   magnitude   0.45197380195996795            PS1_DR2          15.33054   -0.588    0.012163068075119863
+   0         PS1          r              15.2029       0.003775   magnitude   0.45197380195996795            PS1_DR2          15.21019    0.539    0.013537009455562923
+   0         PS1          y              15.4831       0.002694   magnitude   0.45197380195996795            PS1_DR2          15.47777   -0.329    0.016225216054031454
+   0         PS1          z              15.4273       0.004549   magnitude   0.45197380195996795            PS1_DR2          15.43797    0.681    0.015674610074895005
+   0        SDSS          g               14.997           0.02   magnitude    0.4119177459665734       V/147/sdss12          15.03051    1.073    0.031240998703626618
+   0        SDSS          i               15.317          0.018   magnitude    0.4119177459665734       V/147/sdss12          15.30840   -0.377    0.022803508501982758
+   0        SDSS          r               15.207          0.013   magnitude    0.4119177459665734       V/147/sdss12          15.20338   -0.189      0.0191049731745428
+   0        SDSS          u               15.063          0.019   magnitude    0.4119177459665734       V/147/sdss12          15.09093    0.846     0.03301514803843835
+   0        SDSS          z               15.374          0.016   magnitude    0.4119177459665734       V/147/sdss12          15.40645    1.347    0.024083189157584593
+   0      UKIDSS          H           14.5242605    0.005095806   magnitude    0.4881681507603664           LAS_DR11          14.51616   -0.223     0.03641383306917353
+   0      UKIDSS          J            14.758275   0.0027744174   magnitude    0.4881681507603664           LAS_DR11          14.73784   -0.565    0.036162098831641704
+   0      UKIDSS          K            14.506525    0.008099606   magnitude    0.4881681507603664           LAS_DR11          14.48820   -0.424     0.04319263383211582
+   0      UKIDSS          Y            14.942004   0.0034074683   magnitude    0.4881681507603664           LAS_DR11          14.89467   -1.307     0.03621616821552916
+   0        WISE         W1   14.424100000000001           0.01   magnitude    0.5033177475604403      II/363/unwise          14.46331    1.077     0.03640054944640259
+   0        WISE         W2               14.536           0.04   magnitude    0.5033177475604403      II/363/unwise          14.53919    0.053     0.06020797289396147
+fit_theta_interext_atmparams(1)
+ idx  param                                      tie-to  freeze         value         min         max
+  1  fit_theta_interext_atmparams(1).logtheta        0     0          -11.374         -18          -2  dex: log10(theta)
+  2  fit_theta_interext_atmparams(1).E_44m55         0     0     8.125914e-05           0           5  mag
+  3  fit_theta_interext_atmparams(1).R_55            0     1             3.02         2.5           6  
+  4  fit_theta_interext_atmparams(1).c1_vsini        0     1                0           0        1000  km/s
+  5  fit_theta_interext_atmparams(1).c1_zeta         0     1                0           0        1000  km/s
+  6  fit_theta_interext_atmparams(1).c1_vrad         0     1                0     -300000      300000  km/s
+  7  fit_theta_interext_atmparams(1).c1_teff         0     1          29859.7    29419.16    30300.25  K
+  8  fit_theta_interext_atmparams(1).c1_logg         0     1         5.301174    5.224048    5.378301  dex(cgs)
+  9  fit_theta_interext_atmparams(1).c1_xi           0     1                0           0           0  km/s
+ 10  fit_theta_interext_atmparams(1).c1_z            0     1                0          -1           1  dex: log10(n(metal)) += z
+ 11  fit_theta_interext_atmparams(1).c1_HE           0     1           -2.546          -5    -4.99246  dex: log10(n(HE))
+ 12  fit_theta_interext_atmparams(1).c1_sur_ratio    0     1                1           1           1  
+ 13  fit_theta_interext_atmparams(1).c2_vsini        0     1                0           0        1000  km/s
+ 14  fit_theta_interext_atmparams(1).c2_zeta         0     1                0           0        1000  km/s
+ 15  fit_theta_interext_atmparams(1).c2_vrad         0     1                0     -300000      300000  km/s
+ 16  fit_theta_interext_atmparams(1).c2_teff         0     0         5699.815        2300       15000  K
+ 17  fit_theta_interext_atmparams(1).c2_logg         0     0                2           2         5.5  dex(cgs)
+ 18  fit_theta_interext_atmparams(1).c2_xi           0     1                0           0           0  km/s
+ 19  fit_theta_interext_atmparams(1).c2_z            0     1                0          -2           0  dex: log10(n(metal)) += z
+ 20  fit_theta_interext_atmparams(1).c2_HE           0     1            -1.05       -1.05       -1.05  dex: log10(n(HE))
+ 21  fit_theta_interext_atmparams(1).c2_sur_ratio    0     0         35.64864           0        1500  
+ 22  fit_theta_interext_atmparams(1).bb_teff         0     1                0           0     1000000  K
+ 23  fit_theta_interext_atmparams(1).bb_sur_ratio    0     1                0           0        1500  
+ 24  fit_theta_interext_atmparams(1).bb2_teff        0     1                0           0     1000000  K
+ 25  fit_theta_interext_atmparams(1).bb2_sur_ratio   0     1                0           0        1500  
+ 26  fit_theta_interext_atmparams(1).dummy_1         0     1        0.6672051           0         200  
+ 27  fit_theta_interext_atmparams(1).dummy_2         0     1        0.1404868           0           0  
+#=>  10^fit_theta_interext_atmparams(1).logtheta/(2e-3*fit_theta_interext_atmparams(1).dummy_1)*4.4353565926280975e+07
+ 28  fit_theta_interext_atmparams(1).dummy_3         0     1         14.13538           0           0  
+#=>  fit_theta_interext_atmparams(1).dummy_2^2*(fit_theta_interext_atmparams(1).c1_teff/5772.)^4
+ 29  fit_theta_interext_atmparams(1).dummy_4         0     1         0.144005           0           0  
+#=>  10^fit_theta_interext_atmparams(1).c1_logg*fit_theta_interext_atmparams(1).dummy_2^2*3.6469715273112305e-05
+flag      system   passband            magnitude    uncertainty        type      angu_dist_arcsec     VizieR_catalog   magnitude_model      chi       uncertainty_total
+   0       2MASS          H               14.526          0.039   magnitude   0.43310293617258294         II/246/out          14.52224   -0.094     0.04026164427839479
+   0       2MASS          J               14.791          0.026   magnitude   0.43310293617258294         II/246/out          14.73980   -1.730     0.02959729717389748
+   0       2MASS          K               14.437          0.059   magnitude   0.43310293617258294         II/246/out          14.47850    0.694     0.05984145720150872
+   0   DELVE_DR2          g            15.068945       0.000574   magnitude   0.48905752275733927          DELVE_DR2          15.06189   -0.353     0.02000823520453516
+   0   DELVE_DR2          i             15.34741       0.000692   magnitude   0.48905752275733927          DELVE_DR2          15.35575    0.417    0.020011968019162933
+   0   DELVE_DR2          r             15.23694       0.000552   magnitude   0.48905752275733927          DELVE_DR2          15.23036   -0.329    0.020007616149856536
+   0   DELVE_DR2          z             15.44277        0.00081   magnitude   0.48905752275733927          DELVE_DR2          15.45084    0.403      0.0200163957794604
+   0       GALEX        FUV                14.17           0.15   magnitude    0.4940543106188693   II/335/galex_ais          14.22327    0.334     0.15937377450509227
+   0       GALEX        NUV               14.503           0.13   magnitude    0.4940543106188693   II/335/galex_ais          14.45292   -0.371     0.13490737563232041
+   0        Gaia          G             15.06628       0.002869   magnitude    0.3484420854460779     I/350/gaiaedr3          15.06923    0.971   0.0030382825740868807
+   0        Gaia        GBP              15.0854       0.004014   magnitude    0.3484420854460779     I/350/gaiaedr3          15.07998   -1.310    0.004136689014175468
+   0        Gaia        GRP   14.987300000000001        0.00465   magnitude    0.3484420854460779     I/350/gaiaedr3          14.98622   -0.227     0.00475631159618459
+   0         PS1          g              15.0711       0.001395   magnitude   0.45197380195996795            PS1_DR2          15.08222    0.483    0.023042266056097865
+   0         PS1          i              15.3377       0.001985   magnitude   0.45197380195996795            PS1_DR2          15.33054   -0.588    0.012163068075119863
+   0         PS1          r              15.2029       0.003775   magnitude   0.45197380195996795            PS1_DR2          15.21019    0.539    0.013537009455562923
+   0         PS1          y              15.4831       0.002694   magnitude   0.45197380195996795            PS1_DR2          15.47777   -0.329    0.016225216054031454
+   0         PS1          z              15.4273       0.004549   magnitude   0.45197380195996795            PS1_DR2          15.43797    0.681    0.015674610074895005
+   0        SDSS          g               14.997           0.02   magnitude    0.4119177459665734       V/147/sdss12          15.03051    1.073    0.031240998703626618
+   0        SDSS          i               15.317          0.018   magnitude    0.4119177459665734       V/147/sdss12          15.30840   -0.377    0.022803508501982758
+   0        SDSS          r               15.207          0.013   magnitude    0.4119177459665734       V/147/sdss12          15.20338   -0.189      0.0191049731745428
+   0        SDSS          u               15.063          0.019   magnitude    0.4119177459665734       V/147/sdss12          15.09093    0.846     0.03301514803843835
+   0        SDSS          z               15.374          0.016   magnitude    0.4119177459665734       V/147/sdss12          15.40645    1.347    0.024083189157584593
+   0      UKIDSS          H           14.5242605    0.005095806   magnitude    0.4881681507603664           LAS_DR11          14.51616   -0.223     0.03641383306917353
+   0      UKIDSS          J            14.758275   0.0027744174   magnitude    0.4881681507603664           LAS_DR11          14.73784   -0.565    0.036162098831641704
+   0      UKIDSS          K            14.506525    0.008099606   magnitude    0.4881681507603664           LAS_DR11          14.48820   -0.424     0.04319263383211582
+   0      UKIDSS          Y            14.942004   0.0034074683   magnitude    0.4881681507603664           LAS_DR11          14.89467   -1.307     0.03621616821552916
+   0        WISE         W1   14.424100000000001           0.01   magnitude    0.5033177475604403      II/363/unwise          14.46331    1.077     0.03640054944640259
+   0        WISE         W2               14.536           0.04   magnitude    0.5033177475604403      II/363/unwise          14.53919    0.053     0.06020797289396147
+- fit done in 43.6s
+Error: param 11 not set:  value -2.546 lies outside [min, max] interval [-5, -4.9925]
+Warning: prescribed error propagation failed for c1_teff
+Error: param 11 not set:  value -2.546 lies outside [min, max] interval [-5, -4.9925]
+Warning: prescribed error propagation failed for c1_logg
+Error: param 11 not set:  value -2.546 lies outside [min, max] interval [-5, -4.9925]
+Warning: prescribed error propagation failed for c1_HE
+error in round_conf: value has to be within confidence limits (check order of arguments)
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text4FB15CF7.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text4FB15CF7.dvi' -o '/tmp/fabian/xfig/3b/3b3dd29a124058900160842c66231f9c3e5c8dcc.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text4DFA36E44.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text4DFA36E44.dvi' -o '/tmp/fabian/xfig/c2/c21f17344ee87f3c2880bec7f36f4269d9857bec.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text6AD796C5.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text6AD796C5.dvi' -o '/tmp/fabian/xfig/35/35022cd7bbd6e0c9c2f20dee2221f340ba2889ae.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textD5A042ADF.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textD5A042ADF.dvi' -o '/tmp/fabian/xfig/72/729185982c26d5eeac1cd1a172c8bc6ecb26a3f0.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textEEE146143.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textEEE146143.dvi' -o '/tmp/fabian/xfig/28/28a1f1d7091d5c11d13b9d18d42cbbb84cb34bb9.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text6AFC2846A.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text6AFC2846A.dvi' -o '/tmp/fabian/xfig/76/7649499c176a4b0eadc37b4f4df63824438a26b1.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text61E8869E.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text61E8869E.dvi' -o '/tmp/fabian/xfig/54/540b6dfc99cf9b333ec2185ed9d0c50281696b70.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textD9CC5A9D5.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textD9CC5A9D5.dvi' -o '/tmp/fabian/xfig/45/4537c91dda7da087e9930885d87b56a8271ff211.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text256B4F89C.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text256B4F89C.dvi' -o '/tmp/fabian/xfig/90/908a965cd2295f2fc33cc2f6dccdc8eb1a1eb132.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text6DDF77898.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text6DDF77898.dvi' -o '/tmp/fabian/xfig/ca/cae44b9a7f7ce370ed270a4c1437ab6315c0d4fd.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textFAC06C498.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textFAC06C498.dvi' -o '/tmp/fabian/xfig/f9/f9f2d905e1ca601efd28995dba47a9911d73daf2.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textA8CC12918.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textA8CC12918.dvi' -o '/tmp/fabian/xfig/cc/cc0b7ae008e30cd81af50349e5eb7abec11337b6.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textBBB46B384.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textBBB46B384.dvi' -o '/tmp/fabian/xfig/b9/b9051788ee8338ad4949f7e301da0a7f01a5da90.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text4E0231D53.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text4E0231D53.dvi' -o '/tmp/fabian/xfig/95/95fdf4023634deb4bbf898653961d1a10fb16c00.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text7C444F7BA.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text7C444F7BA.dvi' -o '/tmp/fabian/xfig/2d/2d125fb3103c76de4dca2cc09b62ed153938ac3f.eps' >/dev/null 2>&1
+$ fig2dev -L pdf -c   /home/fabian/Projects/SEDplusplus/validation/ref_872072016870129024/photometry_SED.fig /home/fabian/Projects/SEDplusplus/validation/ref_872072016870129024/photometry_SED.pdf
+- script completed in 100.3s

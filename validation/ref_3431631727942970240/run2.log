@@ -1,0 +1,86 @@
+Loading /home/fabian/Projects/ISIS_install/src/stellar_isisscripts/share/stellar_isisscripts.sl
+
+Warning in 'photometric_fitting': Unable to compute synthetic magnitudes for the following observed magnitudes:
+WISE: W4
+
+
+Information from 'photometric_fitting': The following observed magnitudes have a 'flag' different from 0 and are thus ignored:
+INT: Ha
+INT: g
+INT: i
+INT: r
+INT: r
+PS1: g
+PS1: g
+PS1: i
+PS1: r
+PS1: r
+PS1: y
+PS1: z
+WISE: W1
+WISE: W1
+WISE: W2
+WISE: W2
+WISE: W3
+
+
+Warning in 'photometric_fitting': Added a generic uncertainty of 0.00868259 mag in quadrature so that reduced chi-square is closer to unity.
+
+flag   system   passband            magnitude    uncertainty        type      angu_dist_arcsec   VizieR_catalog   magnitude_model      chi      uncertainty_total
+   0    2MASS          H               13.582          0.025   magnitude   0.20866451487305684       II/246/out          13.61713    1.242   0.028291117993643502
+   0    2MASS          J               13.481          0.022   magnitude   0.20866451487305684       II/246/out          13.52777    1.697   0.027556983821352056
+   0    2MASS          K               13.674          0.037   magnitude   0.20866451487305684       II/246/out          13.67597    0.050    0.03929869409191938
+   0     Gaia          G   13.167340000000001       0.002857   magnitude   0.11347316641930408   I/350/gaiaedr3          13.17102    0.401   0.009195096863560438
+   0     Gaia        GBP              13.0786       0.003689   magnitude   0.11347316641930408   I/350/gaiaedr3          13.07945    0.089   0.009486626288109963
+   0     Gaia        GRP   13.314200000000001       0.004021   magnitude   0.11347316641930408   I/350/gaiaedr3          13.30917   -0.523   0.009620592410566982
+   0      PS1          i              13.8398       0.077425   magnitude   0.09358044649496176          PS1_DR2          13.64304   -2.496    0.07882904275919034
+   0      PS1          y               14.027       0.001694   magnitude   0.09358044649496176          PS1_DR2          14.02331   -0.202    0.01828269655522016
+   0      PS1          z              13.8834       0.002474   magnitude   0.09358044649496176          PS1_DR2          13.87501   -0.479   0.017507370828604134
+   0   UKIDSS          H            13.614286   0.0013627108   magnitude   0.15554284387916048         GPS_DR11          13.60344   -0.292    0.03711124274468177
+   0   UKIDSS          J            13.546996   0.0012553419   magnitude   0.15554284387916048         GPS_DR11          13.54244   -0.123   0.037107455323912394
+   0   UKIDSS          K            13.688313   0.0028726896   magnitude   0.15554284387916048         GPS_DR11          13.68888    0.013    0.04340091822609526
+   0     WISE         W1   13.771600000000001          0.007   magnitude    0.1280619487586672    II/363/unwise          13.74884   -0.620    0.03673400818492666
+   0     WISE         W2   13.872100000000001          0.021   magnitude    0.1280619487586672    II/363/unwise          13.85271   -0.385    0.05041217469352278
+fit_theta_interext_atmparams(1)
+ idx  param                                      tie-to  freeze         value         min         max
+  1  fit_theta_interext_atmparams(1).logtheta        0     0        -10.85369         -18          -2  dex: log10(theta)
+  2  fit_theta_interext_atmparams(1).E_44m55         0     0        0.1770893           0           5  mag
+  3  fit_theta_interext_atmparams(1).R_55            0     1             3.02         2.5           6  
+  4  fit_theta_interext_atmparams(1).c1_vsini        0     1                0           0        1000  km/s
+  5  fit_theta_interext_atmparams(1).c1_zeta         0     1                0           0        1000  km/s
+  6  fit_theta_interext_atmparams(1).c1_vrad         0     1                0     -300000      300000  km/s
+  7  fit_theta_interext_atmparams(1).c1_teff         0     1         36712.78    35983.39    37442.16  K
+  8  fit_theta_interext_atmparams(1).c1_logg         0     1         5.463532    5.364445    5.562619  dex(cgs)
+  9  fit_theta_interext_atmparams(1).c1_xi           0     1                0           0           0  km/s
+ 10  fit_theta_interext_atmparams(1).c1_z            0     1                0          -1           1  dex: log10(n(metal)) += z
+ 11  fit_theta_interext_atmparams(1).c1_HE           0     1       -0.9958206   -1.047057  -0.9445843  dex: log10(n(HE))
+ 12  fit_theta_interext_atmparams(1).c1_sur_ratio    0     1                1           1           1  
+ 13  fit_theta_interext_atmparams(1).bb_teff         0     1                0           0     1000000  K
+ 14  fit_theta_interext_atmparams(1).bb_sur_ratio    0     1                0           0        1500  
+ 15  fit_theta_interext_atmparams(1).bb2_teff        0     1                0           0     1000000  K
+ 16  fit_theta_interext_atmparams(1).bb2_sur_ratio   0     1                0           0        1500  
+ 17  fit_theta_interext_atmparams(1).dummy_1         0     1             1.15           0         200  
+ 18  fit_theta_interext_atmparams(1).dummy_2         0     1        0.2700893           0           0  
+#=>  10^fit_theta_interext_atmparams(1).logtheta/(2e-3*fit_theta_interext_atmparams(1).dummy_1)*4.4353565926280975e+07
+ 19  fit_theta_interext_atmparams(1).dummy_3         0     1         119.3928           0           0  
+#=>  fit_theta_interext_atmparams(1).dummy_2^2*(fit_theta_interext_atmparams(1).c1_teff/5772.)^4
+ 20  fit_theta_interext_atmparams(1).dummy_4         0     1        0.7735336           0           0  
+#=>  10^fit_theta_interext_atmparams(1).c1_logg*fit_theta_interext_atmparams(1).dummy_2^2*3.6469715273112305e-05
+flag   system   passband            magnitude    uncertainty        type      angu_dist_arcsec   VizieR_catalog   magnitude_model      chi      uncertainty_total
+   0    2MASS          H               13.582          0.025   magnitude   0.20866451487305684       II/246/out          13.61713    1.242   0.028291117993643502
+   0    2MASS          J               13.481          0.022   magnitude   0.20866451487305684       II/246/out          13.52777    1.697   0.027556983821352056
+   0    2MASS          K               13.674          0.037   magnitude   0.20866451487305684       II/246/out          13.67597    0.050    0.03929869409191938
+   0     Gaia          G   13.167340000000001       0.002857   magnitude   0.11347316641930408   I/350/gaiaedr3          13.17102    0.401   0.009195096863560438
+   0     Gaia        GBP              13.0786       0.003689   magnitude   0.11347316641930408   I/350/gaiaedr3          13.07945    0.089   0.009486626288109963
+   0     Gaia        GRP   13.314200000000001       0.004021   magnitude   0.11347316641930408   I/350/gaiaedr3          13.30917   -0.523   0.009620592410566982
+   0      PS1          i              13.8398       0.077425   magnitude   0.09358044649496176          PS1_DR2          13.64304   -2.496    0.07882904275919034
+   0      PS1          y               14.027       0.001694   magnitude   0.09358044649496176          PS1_DR2          14.02331   -0.202    0.01828269655522016
+   0      PS1          z              13.8834       0.002474   magnitude   0.09358044649496176          PS1_DR2          13.87501   -0.479   0.017507370828604134
+   0   UKIDSS          H            13.614286   0.0013627108   magnitude   0.15554284387916048         GPS_DR11          13.60344   -0.292    0.03711124274468177
+   0   UKIDSS          J            13.546996   0.0012553419   magnitude   0.15554284387916048         GPS_DR11          13.54244   -0.123   0.037107455323912394
+   0   UKIDSS          K            13.688313   0.0028726896   magnitude   0.15554284387916048         GPS_DR11          13.68888    0.013    0.04340091822609526
+   0     WISE         W1   13.771600000000001          0.007   magnitude    0.1280619487586672    II/363/unwise          13.74884   -0.620    0.03673400818492666
+   0     WISE         W2   13.872100000000001          0.021   magnitude    0.1280619487586672    II/363/unwise          13.85271   -0.385    0.05041217469352278
+- fit done in 1.4s
+$ fig2dev -L pdf -c   /home/fabian/Projects/SEDplusplus/validation/ref_3431631727942970240/photometry_SED.fig /home/fabian/Projects/SEDplusplus/validation/ref_3431631727942970240/photometry_SED.pdf
+- script completed in 23.5s

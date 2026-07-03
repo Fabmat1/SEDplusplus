@@ -1,0 +1,343 @@
+Loading /home/fabian/Projects/ISIS_install/src/stellar_isisscripts/share/stellar_isisscripts.sl
+Information from 'query_photometry': URL offline: https://datalab.noirlab.edu/tap
+Information from 'query_photometry': Queried catalogue II/335/galex_ais: Found one target.
+Information from 'query_photometry': Queried catalogue J/ApJS/96/461/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/59B/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/168/ubvmeans: Found one target.
+Information from 'query_photometry': Queried catalogue II/237/colors: Found nothing.
+Information from 'query_photometry': Queried catalogue II/7A/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/133/2502/phot: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/287/867/table1: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/431/240/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/453/1879/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/453/1879/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/459/4343/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJS/123/639/ubv: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/133/2393/photo: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/119/241/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJ/654/915/fors1: Found nothing.
+Information from 'query_photometry': Queried catalogue J/A+A/493/959/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJ/783/56/table2: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/485/3042/table4: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AcA/50/307/phot: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/128/1606/lmcps: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/361/1055/table1: Found nothing.
+Information from 'query_photometry': Queried catalogue I/320/spm4: Found nothing.
+Information from 'query_photometry': Queried catalogue III/137/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/215/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/A+A/580/A23/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/169/main: Found nothing.
+Information from 'query_photometry': Queried catalogue V/147/sdss12: Found one target.
+Information from 'query_photometry': Queried catalogue II/336/apass9: Found one target.
+Information from 'query_photometry': Queried catalogue II/347/kids_dr3: Found nothing.
+Information from 'query_photometry': Queried catalogue II/350/vstatlas: Found nothing.
+Information from 'query_photometry': Queried catalogue Skymapper_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue PS1_DR2: Found one target.
+Information from 'query_photometry': Queried catalogue II/349/ps1: Found one target.
+Information from 'query_photometry': Queried catalogue J/ApJS/249/18/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue V/165/igapsdr1: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/144/24/kisdr2: Found nothing.
+Information from 'query_photometry': Queried catalogue I/350/gaiaedr3: Found one target.
+Information from 'query_photometry': Queried catalogue I/311/hip2: Found nothing.
+Information from 'query_photometry': Queried catalogue I/259/tyc2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/262/batc: Found nothing.
+Information from 'query_photometry': Queried catalogue JPLUS_DR3: Found nothing.
+Information from 'query_photometry': Queried catalogue II/380/splusdr4: Found nothing.
+Information from 'query_photometry': Queried catalogue DELVE_DR2: Found nothing.
+Information from 'query_photometry': Queried catalogue DES_DR2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/357/des_dr1: Found nothing.
+Information from 'query_photometry': Queried catalogue DECaPS_DR1: Found nothing.
+Information from 'query_photometry': Queried catalogue SMASH_DR2: Found nothing.
+Information from 'query_photometry': Queried catalogue B/denis/denis: Found nothing.
+Information from 'query_photometry': Queried catalogue J/A+A/413/1037/table1: Found nothing.
+Information from 'query_photometry': Queried catalogue II/246/out: Found one target.
+Information from 'query_photometry': Queried catalogue J/AJ/150/176/table3: Found nothing.
+Information from 'query_photometry': Queried catalogue LAS_DR11: Found nothing.
+Information from 'query_photometry': Queried catalogue GPS_DR11: Found nothing.
+Information from 'query_photometry': Queried catalogue GCS_DR11: Found nothing.
+Information from 'query_photometry': Queried catalogue DXS_DR11: Found nothing.
+Information from 'query_photometry': Queried catalogue UDS_DR11: Found nothing.
+Error: Unexpected error while executing a SQL query: Invalid object name 'UHSDR3.dbo.uhsSource'.
+Warning in 'tapquery': Could not retrieve data from http://tap.roe.ac.uk/wsa
+Information from 'query_photometry': Queried catalogue UHS_DR3: Found nothing.
+Information from 'query_photometry': Queried catalogue VHS_DR6: Found nothing.
+Information from 'query_photometry': Queried catalogue VIKING_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue VMC_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue VVV_DR4: Found nothing.
+Information from 'query_photometry': Queried catalogue VIDEO_DR5: Found nothing.
+Information from 'query_photometry': Queried catalogue II/288/out: Found nothing.
+Information from 'query_photometry': Queried catalogue II/363/unwise: Found one target.
+Information from 'query_photometry': Queried catalogue II/365/catwise: Found one target.
+Information from 'query_photometry': Queried catalogue II/328/allwise: Found one target.
+Information from 'query_photometry': Queried catalogue J/AJ/135/1395/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/293/glimpse: Found nothing.
+Information from 'query_photometry': Queried catalogue J/MNRAS/459/1403/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/305/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue J/ApJS/254/11/spikes: Found nothing.
+Information from 'query_photometry': Queried catalogue J/AJ/149/64/catalog: Found nothing.
+Information from 'query_photometry': Queried catalogue II/368/sstsl2: Found nothing.
+Information from 'query_photometry': Queried catalogue II/339/uvotssc1: Found nothing.
+Information from 'query_photometry': Queried catalogue II/356/xmmom41s: Found nothing.
+Information from 'query_photometry': Queried catalogue VI/110/inescat: Found nothing.
+Information from 'query_photometry': Queried catalogue MAST: Found nothing.
+
+Warning in 'photometric_fitting': Unable to compute synthetic magnitudes for the following observed magnitudes:
+WISE: W4
+
+
+Information from 'photometric_fitting': The following observed magnitudes have a 'flag' different from 0 and are thus ignored:
+Johnson: B
+Johnson: V
+PS1: g
+PS1: g
+PS1: i
+PS1: r
+PS1: r
+PS1: y
+PS1: z
+SDSS: g
+SDSS: g
+SDSS: i
+SDSS: i
+SDSS: r
+SDSS: r
+SDSS: u
+SDSS: z
+WISE: W1
+WISE: W1
+WISE: W2
+WISE: W2
+WISE: W3
+
+flag    system   passband            magnitude   uncertainty        type     angu_dist_arcsec     VizieR_catalog   magnitude_model      chi       uncertainty_total
+   0     2MASS          H               13.899         0.042   magnitude   1.2642974888992036         II/246/out          13.93034    0.726     0.04317406628984581
+   0     2MASS          J               13.799         0.029   magnitude   1.2642974888992036         II/246/out          13.81027    0.349     0.03226453160980336
+   0     2MASS          K               13.997         0.075   magnitude   1.2642974888992036         II/246/out          14.00663    0.127     0.07566372975210778
+   0     GALEX        FUV                11.81           0.8   magnitude   2.6996104957209255   II/335/galex_ais          12.00385    0.242      0.8018104514160439
+   0     GALEX        NUV                11.94           0.8   magnitude   2.6996104957209255   II/335/galex_ais          12.23739    0.371      0.8008120878208571
+   0      Gaia          G   13.196800000000001      0.002816   magnitude   1.1734455327424014     I/350/gaiaedr3          13.19902    0.742   0.0029882864655183246
+   0      Gaia        GBP              13.0607      0.003005   magnitude   1.1734455327424014     I/350/gaiaedr3          13.05883   -0.591    0.003167021471351276
+   0      Gaia        GRP   13.463700000000001      0.003886   magnitude   1.1734455327424014     I/350/gaiaedr3          13.46263   -0.267    0.004012604640380111
+   0   Johnson        BmV                -0.28         0.025       color   0.6298375162301112    II/168/ubvmeans          -0.24626    1.175    0.028722813232690145
+   0   Johnson        UmB                -1.03         0.025       color   0.6298375162301112    II/168/ubvmeans          -1.01508    0.519    0.028722813232690145
+   0   Johnson          V                13.23         0.025   magnitude   0.6298375162301112    II/168/ubvmeans          13.26017    1.120    0.026925824035672525
+   0       PS1          i              13.8122      0.003847   magnitude   0.7488706745201414            PS1_DR2          13.79820   -1.111    0.012601563752169809
+   0       PS1          y              14.2438      0.003268   magnitude   0.7488706745201414            PS1_DR2          14.24821    0.270    0.016330334472998403
+   0       PS1          z              14.0797      0.003476   magnitude   0.7488706745201414            PS1_DR2          14.07544   -0.277    0.015397486028569728
+   0      WISE         W1              14.0691         0.008   magnitude   0.7958864558654822      II/363/unwise          14.09208    0.640    0.035902646142032486
+   0      WISE         W2   14.183300000000001         0.025   magnitude   0.7958864558654822      II/363/unwise          14.19697    0.266       0.051478150704935
+fit_theta_interext_atmparams(1)
+ idx  param                                      tie-to  freeze         value         min         max
+  1  fit_theta_interext_atmparams(1).logtheta        0     0        -10.85861         -18          -2  dex: log10(theta)
+  2  fit_theta_interext_atmparams(1).E_44m55         0     0       0.03306738           0           5  mag
+  3  fit_theta_interext_atmparams(1).R_55            0     1             3.02         2.5           6  
+  4  fit_theta_interext_atmparams(1).c1_vsini        0     1                0           0        1000  km/s
+  5  fit_theta_interext_atmparams(1).c1_zeta         0     1                0           0        1000  km/s
+  6  fit_theta_interext_atmparams(1).c1_vrad         0     1                0     -300000      300000  km/s
+  7  fit_theta_interext_atmparams(1).c1_teff         0     1         29232.56    28811.43    29653.68  K
+  8  fit_theta_interext_atmparams(1).c1_logg         0     1         5.523112    5.447186    5.599038  dex(cgs)
+  9  fit_theta_interext_atmparams(1).c1_xi           0     1                0           0           0  km/s
+ 10  fit_theta_interext_atmparams(1).c1_z            0     1                0          -1           1  dex: log10(n(metal)) += z
+ 11  fit_theta_interext_atmparams(1).c1_HE           0     1        -3.749974   -3.844174   -3.655775  dex: log10(n(HE))
+ 12  fit_theta_interext_atmparams(1).c1_sur_ratio    0     1                1           1           1  
+ 13  fit_theta_interext_atmparams(1).bb_teff         0     1                0           0     1000000  K
+ 14  fit_theta_interext_atmparams(1).bb_sur_ratio    0     1                0           0        1500  
+ 15  fit_theta_interext_atmparams(1).bb2_teff        0     1                0           0     1000000  K
+ 16  fit_theta_interext_atmparams(1).bb2_sur_ratio   0     1                0           0        1500  
+ 17  fit_theta_interext_atmparams(1).dummy_1         0     1         1.558782           0         200  
+ 18  fit_theta_interext_atmparams(1).dummy_2         0     1        0.1970157           0           0  
+#=>  10^fit_theta_interext_atmparams(1).logtheta/(2e-3*fit_theta_interext_atmparams(1).dummy_1)*4.4353565926280975e+07
+ 19  fit_theta_interext_atmparams(1).dummy_3         0     1         25.53662           0           0  
+#=>  fit_theta_interext_atmparams(1).dummy_2^2*(fit_theta_interext_atmparams(1).c1_teff/5772.)^4
+ 20  fit_theta_interext_atmparams(1).dummy_4         0     1        0.4721128           0           0  
+#=>  10^fit_theta_interext_atmparams(1).c1_logg*fit_theta_interext_atmparams(1).dummy_2^2*3.6469715273112305e-05
+flag    system   passband            magnitude   uncertainty        type     angu_dist_arcsec     VizieR_catalog   magnitude_model      chi       uncertainty_total
+   0     2MASS          H               13.899         0.042   magnitude   1.2642974888992036         II/246/out          13.93034    0.726     0.04317406628984581
+   0     2MASS          J               13.799         0.029   magnitude   1.2642974888992036         II/246/out          13.81027    0.349     0.03226453160980336
+   0     2MASS          K               13.997         0.075   magnitude   1.2642974888992036         II/246/out          14.00663    0.127     0.07566372975210778
+   0     GALEX        FUV                11.81           0.8   magnitude   2.6996104957209255   II/335/galex_ais          12.00385    0.242      0.8018104514160439
+   0     GALEX        NUV                11.94           0.8   magnitude   2.6996104957209255   II/335/galex_ais          12.23739    0.371      0.8008120878208571
+   0      Gaia          G   13.196800000000001      0.002816   magnitude   1.1734455327424014     I/350/gaiaedr3          13.19902    0.742   0.0029882864655183246
+   0      Gaia        GBP              13.0607      0.003005   magnitude   1.1734455327424014     I/350/gaiaedr3          13.05883   -0.591    0.003167021471351276
+   0      Gaia        GRP   13.463700000000001      0.003886   magnitude   1.1734455327424014     I/350/gaiaedr3          13.46263   -0.267    0.004012604640380111
+   0   Johnson        BmV                -0.28         0.025       color   0.6298375162301112    II/168/ubvmeans          -0.24626    1.175    0.028722813232690145
+   0   Johnson        UmB                -1.03         0.025       color   0.6298375162301112    II/168/ubvmeans          -1.01508    0.519    0.028722813232690145
+   0   Johnson          V                13.23         0.025   magnitude   0.6298375162301112    II/168/ubvmeans          13.26017    1.120    0.026925824035672525
+   0       PS1          i              13.8122      0.003847   magnitude   0.7488706745201414            PS1_DR2          13.79820   -1.111    0.012601563752169809
+   0       PS1          y              14.2438      0.003268   magnitude   0.7488706745201414            PS1_DR2          14.24821    0.270    0.016330334472998403
+   0       PS1          z              14.0797      0.003476   magnitude   0.7488706745201414            PS1_DR2          14.07544   -0.277    0.015397486028569728
+   0      WISE         W1              14.0691         0.008   magnitude   0.7958864558654822      II/363/unwise          14.09208    0.640    0.035902646142032486
+   0      WISE         W2   14.183300000000001         0.025   magnitude   0.7958864558654822      II/363/unwise          14.19697    0.266       0.051478150704935
+- fit done in 1.1s
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text2F4D1ED04.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text2F4D1ED04.dvi' -o '/tmp/fabian/xfig/7b/7b8e945ef0d87e9046ba268ab2dbc329430e7432.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textFB4B43EE8.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textFB4B43EE8.dvi' -o '/tmp/fabian/xfig/af/afb649b119ed51009be7cd2bb70e5f4000aa7369.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textE4696451B.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textE4696451B.dvi' -o '/tmp/fabian/xfig/ae/ae2ffe3086f7adf2a454d002e99a883d549c8d71.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text5049243F0.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text5049243F0.dvi' -o '/tmp/fabian/xfig/d6/d65451b3da6259631a07bf5b36f88da9aeb99d65.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textC5872994E.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textC5872994E.dvi' -o '/tmp/fabian/xfig/f5/f5baeecedd02c25c4eb2843a86ba1bcbe8db4ba0.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textD6FF1FAA2.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textD6FF1FAA2.dvi' -o '/tmp/fabian/xfig/71/7131f4b08586b4a643422fda1bf01f2b36cf0d63.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text364E299D8.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text364E299D8.dvi' -o '/tmp/fabian/xfig/56/562b4ac82eefbeabbc771731fc6071a232251597.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text765613EB.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text765613EB.dvi' -o '/tmp/fabian/xfig/a7/a7aa5cf5b2c270365290d261e3c898e23aa7f142.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textE5DC4576A.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textE5DC4576A.dvi' -o '/tmp/fabian/xfig/13/13bcc7e91990ac3862fb6e4eadf80ba5e3a6eb71.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textC0582108D.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textC0582108D.dvi' -o '/tmp/fabian/xfig/54/54b0cfae3ae0351db0f014b368d71483eccf7a6a.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text27E32430C.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text27E32430C.dvi' -o '/tmp/fabian/xfig/60/60a72c06eeec60d1664ce92c025431d5340c3afe.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text907C60716.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text907C60716.dvi' -o '/tmp/fabian/xfig/84/843877dce9aed855e1c71b97f51eab88fc750458.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textCF401FB5F.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textCF401FB5F.dvi' -o '/tmp/fabian/xfig/3a/3addf3b3e34f83965e49c9f6fcd982ddafc79dcd.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text374532480.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text374532480.dvi' -o '/tmp/fabian/xfig/1b/1b949fa69e06b7d92338e148293f0bce38157f13.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text4CB5631B.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text4CB5631B.dvi' -o '/tmp/fabian/xfig/6f/6fc3b8692fda98b85f10c69f7bb80c10d39a28ff.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textC1DB1438.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textC1DB1438.dvi' -o '/tmp/fabian/xfig/d0/d0a966c66de3f4022e4920f624734319a229fac8.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text6E843E619.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text6E843E619.dvi' -o '/tmp/fabian/xfig/ed/ed5d82c13e92519bb8275cc7f0b1a0058d646871.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text454A70E8D.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text454A70E8D.dvi' -o '/tmp/fabian/xfig/4d/4db3dad3a72a230247380ff965a582a7e947f3ec.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textC7F830B0A.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textC7F830B0A.dvi' -o '/tmp/fabian/xfig/f7/f7f28a01d2f9f59946d4c5d47b75f6b05b62c4c4.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text2A3341873.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text2A3341873.dvi' -o '/tmp/fabian/xfig/ee/eed20447f2075bd36bb8cea40fe715b10a69e8aa.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textE1BE15F5.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textE1BE15F5.dvi' -o '/tmp/fabian/xfig/ac/acdd467890c43c7f952e1aeac1a77aa6d04fc062.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text21B876890.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text21B876890.dvi' -o '/tmp/fabian/xfig/7d/7d14b2f3303d76dd0947a4788908512ed6f2a09c.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textC5671D45A.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textC5671D45A.dvi' -o '/tmp/fabian/xfig/45/4571ae09d3e325e62cade7467588078bbc8f0d3f.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textADD29735.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textADD29735.dvi' -o '/tmp/fabian/xfig/c5/c56f801856248609095e80e394ad6570fdb5c50f.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text38C4340E9.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text38C4340E9.dvi' -o '/tmp/fabian/xfig/89/892f3024dc708a0197dfe54973ea3f3f32b35b29.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textEE791ABAC.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textEE791ABAC.dvi' -o '/tmp/fabian/xfig/17/1733ae0c1bc020efc4106ecce7e83037abbf448e.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text83733360F.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text83733360F.dvi' -o '/tmp/fabian/xfig/03/033d6ab67c7895744e32307d0c0ff556d864ccf7.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text1BD02E9B.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text1BD02E9B.dvi' -o '/tmp/fabian/xfig/ce/cecafb048205ce9c9d4823e6ddadb430b239fb32.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text8800DD.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text8800DD.dvi' -o '/tmp/fabian/xfig/b2/b2d25549aea02a750a7046ffff03258662b3f874.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textF77B2D92E.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textF77B2D92E.dvi' -o '/tmp/fabian/xfig/70/7020bfc4bcefc82ed8846d64aafbcf6615cd969c.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text43738D1B.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text43738D1B.dvi' -o '/tmp/fabian/xfig/33/3365da7913a1ed97e35587a9be6a5746a2b83ba7.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textFD8619F6C.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textFD8619F6C.dvi' -o '/tmp/fabian/xfig/ca/caf57f730225ccde2640021432f0cc43bc9ea7d2.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'text6FFEC1A.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/text6FFEC1A.dvi' -o '/tmp/fabian/xfig/ae/ae7eda578ce5e42d34df3e1b7fa7b29c4ddfbb97.eps' >/dev/null 2>&1
+$ cd '/tmp/fabian/xfig'; latex -interaction=batchmode 'textF53F61621.tex'
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026/Arch Linux) (preloaded format=latex)
+ restricted \write18 enabled.
+entering extended mode
+$ dvips -E '/tmp/fabian/xfig/textF53F61621.dvi' -o '/tmp/fabian/xfig/d2/d2b56b2f74a85e3e0f9f5166d1f9372992332554.eps' >/dev/null 2>&1
+$ fig2dev -L pdf -c   /home/fabian/Projects/SEDplusplus/validation/ref_648029239761019776/photometry_SED.fig /home/fabian/Projects/SEDplusplus/validation/ref_648029239761019776/photometry_SED.pdf
+- script completed in 61.3s

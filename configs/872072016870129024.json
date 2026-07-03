@@ -1,0 +1,22 @@
+{
+  "star": "Gaia DR3 872072016870129024",
+  "coordinates": {"ra": 114.301, "dec": 26.7069},
+  "par":      {"name": ["c1_xi", "c1_z", "c2_xi", "c2_z", "c2_HE", "c2_logg", "c2_teff"],
+               "value": [0, 0, 0, 0, -1.05, 4.0, 6000],
+               "freeze": [1, 1, 1, 1, 1, 0, 0]},
+  "par_full": {"name": ["c1_HE", "c1_logg", "c1_teff", "R_55"],
+               "value": [-5.05, 5.3011742, 29859.702, 3.02],
+               "freeze": [1, 1, 1, 1],
+               "min": [-5, 5.2240475, 29419.157, 2.5],
+               "max": [-4.99246, 5.3783009, 30300.247, 6]},
+  "griddirectories": ["processed/", "/home/fabian/ISIS_models/Phoenix_late_type_stars_photometry_v2.0/processed/"],
+  "bpaths": ["./", "/home/fabian/ISIS_models/sdB/", "/home/fabian/ISIS_models/"],
+  "conf_level": 0,
+  "write_model": 1,
+  "apply_ZPO_corr": 1,
+  "remove_outliers": 5,
+  "nMC": 2000000,
+  "refdata": "/home/fabian/Projects/ISIS_install/src/stellar_isisscripts/refdata",
+  "workdir": "validation/ref_872072016870129024",
+  "outdir": "validation/cpp_872072016870129024"
+}

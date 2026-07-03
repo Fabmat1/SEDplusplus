@@ -1,0 +1,48 @@
+# RA = 114.3010000000 DEC = 26.7069000000
+# meanSFD = 0.0405 stdSFD = 0.0007
+# meanSandF = 0.0348 stdSandF = 0.0006
+flag      system   passband            magnitude           uncertainty        type      angu_dist_arcsec     VizieR_catalog
+   0       2MASS          J               14.791                 0.026   magnitude   0.43310293617258294         II/246/out
+   0       2MASS          H               14.526                 0.039   magnitude   0.43310293617258294         II/246/out
+   0       2MASS          K               14.437                 0.059   magnitude   0.43310293617258294         II/246/out
+   0   DELVE_DR2          g            15.068945              0.000574   magnitude   0.48905752275733927          DELVE_DR2
+   0   DELVE_DR2          i             15.34741              0.000692   magnitude   0.48905752275733927          DELVE_DR2
+   0   DELVE_DR2          r             15.23694              0.000552   magnitude   0.48905752275733927          DELVE_DR2
+   0   DELVE_DR2          z             15.44277               0.00081   magnitude   0.48905752275733927          DELVE_DR2
+   0       GALEX        FUV                14.17                  0.15   magnitude    0.4940543106188693   II/335/galex_ais
+   0       GALEX        NUV               14.503                  0.13   magnitude    0.4940543106188693   II/335/galex_ais
+   0        Gaia          G             15.06628              0.002869   magnitude    0.3484420854460779     I/350/gaiaedr3
+   0        Gaia        GRP   14.987300000000001               0.00465   magnitude    0.3484420854460779     I/350/gaiaedr3
+   0        Gaia        GBP              15.0854              0.004014   magnitude    0.3484420854460779     I/350/gaiaedr3
+  -5     Johnson          B               15.068   0.09940321926376429   magnitude    0.4332119834176004      II/336/apass9
+  -5     Johnson          V               15.143   0.06171709649683789   magnitude    0.4332119834176004      II/336/apass9
+   0         PS1          y              15.4831              0.002694   magnitude   0.45197380195996795            PS1_DR2
+   0         PS1          g              15.0711              0.001395   magnitude   0.45197380195996795            PS1_DR2
+   0         PS1          r              15.2029              0.003775   magnitude   0.45197380195996795            PS1_DR2
+   0         PS1          i              15.3377              0.001985   magnitude   0.45197380195996795            PS1_DR2
+   0         PS1          z              15.4273              0.004549   magnitude   0.45197380195996795            PS1_DR2
+   1         PS1          y              15.4831                 0.003   magnitude   0.47446837131370007         II/349/ps1
+   1         PS1          g              15.0711                0.0015   magnitude   0.47446837131370007         II/349/ps1
+   1         PS1          r              15.2029                0.0039   magnitude   0.47446837131370007         II/349/ps1
+   1         PS1          i              15.3377                0.0017   magnitude   0.47446837131370007         II/349/ps1
+   1         PS1          z              15.4273                0.0045   magnitude   0.47446837131370007         II/349/ps1
+   0        SDSS          u               15.063                 0.019   magnitude    0.4119177459665734       V/147/sdss12
+   0        SDSS          g               14.997                  0.02   magnitude    0.4119177459665734       V/147/sdss12
+   0        SDSS          r               15.207                 0.013   magnitude    0.4119177459665734       V/147/sdss12
+   0        SDSS          i               15.317                 0.018   magnitude    0.4119177459665734       V/147/sdss12
+   0        SDSS          z               15.374                 0.016   magnitude    0.4119177459665734       V/147/sdss12
+  -5        SDSS          g               15.025   0.07975587752636165   magnitude    0.4332119834176004      II/336/apass9
+  -5        SDSS          r               15.189   0.07975587752636165   magnitude    0.4332119834176004      II/336/apass9
+  -5        SDSS          i               15.297   0.11329607230614837   magnitude    0.4332119834176004      II/336/apass9
+   0      UKIDSS          Y            14.942004          0.0034074683   magnitude    0.4881681507603664           LAS_DR11
+   0      UKIDSS          J            14.758275          0.0027744174   magnitude    0.4881681507603664           LAS_DR11
+   0      UKIDSS          H           14.5242605           0.005095806   magnitude    0.4881681507603664           LAS_DR11
+   0      UKIDSS          K            14.506525           0.008099606   magnitude    0.4881681507603664           LAS_DR11
+   0        WISE         W1   14.424100000000001                  0.01   magnitude    0.5033177475604403      II/363/unwise
+   0        WISE         W2               14.536                  0.04   magnitude    0.5033177475604403      II/363/unwise
+  -3        WISE         W1               14.438                 0.017   magnitude    0.5074488113036872     II/365/catwise
+  -3        WISE         W2               14.512                 0.021   magnitude    0.5074488113036872     II/365/catwise
+  -3        WISE         W1               14.402                  0.03   magnitude    0.4086596989149106     II/328/allwise
+  -3        WISE         W2               14.438                 0.054   magnitude    0.4086596989149106     II/328/allwise
+  -1        WISE         W3               12.413                  -nan   magnitude    0.4086596989149106     II/328/allwise
+  -1        WISE         W4                 8.71                  -nan   magnitude    0.4086596989149106     II/328/allwise

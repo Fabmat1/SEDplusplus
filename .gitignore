@@ -1,0 +1,4 @@
+build/
+validation/cpp_*/
+*.o
+*.pdf

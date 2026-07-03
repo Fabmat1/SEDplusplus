@@ -1,0 +1,43 @@
+# RA = 145.9770000000 DEC = 27.7829000000
+# meanSFD = 0.0205 stdSFD = 0.0005
+# meanSandF = 0.0176 stdSandF = 0.0004
+flag    system   passband            magnitude           uncertainty        type     angu_dist_arcsec     VizieR_catalog
+   0     2MASS          J               13.799                 0.029   magnitude   1.2642974888992036         II/246/out
+   0     2MASS          H               13.899                 0.042   magnitude   1.2642974888992036         II/246/out
+   0     2MASS          K               13.997                 0.075   magnitude   1.2642974888992036         II/246/out
+   0     GALEX        FUV                11.81                   0.8   magnitude   2.6996104957209255   II/335/galex_ais
+   0     GALEX        NUV                11.94                   0.8   magnitude   2.6996104957209255   II/335/galex_ais
+   0      Gaia          G   13.196800000000001              0.002816   magnitude   1.1734455327424014     I/350/gaiaedr3
+   0      Gaia        GRP   13.463700000000001              0.003886   magnitude   1.1734455327424014     I/350/gaiaedr3
+   0      Gaia        GBP              13.0607              0.003005   magnitude   1.1734455327424014     I/350/gaiaedr3
+   0   Johnson          V                13.23                  -nan   magnitude   0.6298375162301112    II/168/ubvmeans
+   0   Johnson        BmV                -0.28                  -nan       color   0.6298375162301112    II/168/ubvmeans
+   0   Johnson        UmB                -1.03                  -nan       color   0.6298375162301112    II/168/ubvmeans
+  -5   Johnson          B               13.237   0.47967072039056124   magnitude   0.9385211182928962      II/336/apass9
+  -5   Johnson          V               13.292   0.08588364221433555   magnitude   0.9385211182928962      II/336/apass9
+   0       PS1          y              14.2438              0.003268   magnitude   0.7488706745201414            PS1_DR2
+  -1       PS1          g               13.071                -999.0   magnitude   0.7488706745201414            PS1_DR2
+  -1       PS1          r               13.494                -999.0   magnitude   0.7488706745201414            PS1_DR2
+   0       PS1          i              13.8122              0.003847   magnitude   0.7488706745201414            PS1_DR2
+   0       PS1          z              14.0797              0.003476   magnitude   0.7488706745201414            PS1_DR2
+   1       PS1          y              14.2438                0.0033   magnitude   0.7630171207489002         II/349/ps1
+  -1       PS1          g               13.071                  -nan   magnitude   0.7630171207489002         II/349/ps1
+  -1       PS1          r               13.494                  -nan   magnitude   0.7630171207489002         II/349/ps1
+   1       PS1          i              13.8122                0.0032   magnitude   0.7630171207489002         II/349/ps1
+   1       PS1          z              14.0797                0.0041   magnitude   0.7630171207489002         II/349/ps1
+  -1      SDSS          u               12.784                 0.043   magnitude   1.0699034598426755       V/147/sdss12
+  -1      SDSS          g               13.038                 0.001   magnitude   1.0699034598426755       V/147/sdss12
+  -1      SDSS          r               13.443                 0.001   magnitude   1.0699034598426755       V/147/sdss12
+  -1      SDSS          i               13.877                 0.001   magnitude   1.0699034598426755       V/147/sdss12
+  -1      SDSS          z               14.122                 0.021   magnitude   1.0699034598426755       V/147/sdss12
+  -5      SDSS          g               13.276    0.5684091835992799   magnitude   0.9385211182928962      II/336/apass9
+  -5      SDSS          r               13.452   0.07547184905645282   magnitude   0.9385211182928962      II/336/apass9
+  -5      SDSS          i               13.772   0.06325345840347388   magnitude   0.9385211182928962      II/336/apass9
+   0      WISE         W1              14.0691                 0.008   magnitude   0.7958864558654822      II/363/unwise
+   0      WISE         W2   14.183300000000001                 0.025   magnitude   0.7958864558654822      II/363/unwise
+  -3      WISE         W1               14.074                 0.015   magnitude    0.722769733699253     II/365/catwise
+  -3      WISE         W2               14.182                 0.017   magnitude    0.722769733699253     II/365/catwise
+  -3      WISE         W1               14.099                 0.027   magnitude    0.872432685049883     II/328/allwise
+  -3      WISE         W2               14.175                 0.043   magnitude    0.872432685049883     II/328/allwise
+  -1      WISE         W3               12.488                  -nan   magnitude    0.872432685049883     II/328/allwise
+  -1      WISE         W4                 8.88                  -nan   magnitude    0.872432685049883     II/328/allwise
