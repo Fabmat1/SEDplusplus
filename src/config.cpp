@@ -54,8 +54,19 @@ Config Config::load(const std::string& json_path) {
   c.bpaths = j.value("bpaths", std::vector<std::string>{"./"});
 
   c.conf_level = j.value("conf_level", 0);
-  c.write_model = j.value("write_model", 1) != 0;
+  // Phase-3 toggles: default OFF (bulk fitting stays lean). Only write_model
+  // (and plot, which implies it) has behaviour in Stage 1; the rest are
+  // parse-only until later stages.
+  c.write_model = j.value("write_model", 0) != 0;
+  c.write_fits = j.value("write_fits", 0) != 0;
+  c.write_tex = j.value("write_tex", 0) != 0;
+  c.plot = j.value("plot", 0) != 0;
   c.save_MC = j.value("save_MC", 0) != 0;
+  if (c.plot) {  // plot implies write_fits + write_model (photometry.sl)
+    c.write_fits = true;
+    c.write_model = true;
+  }
+  c.plot_script = j.value("plot_script", std::string());
   c.apply_ZPO_corr = j.value("apply_ZPO_corr", 1) != 0;
   c.remove_outliers = j.value("remove_outliers", 5.0);
   c.nMC = j.value("nMC", 2000000L);

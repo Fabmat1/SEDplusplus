@@ -52,7 +52,11 @@ RoundedErr round_err_digits(double x, double digits) {
 RoundedConf round_conf(double lo, double val, double hi) {
   RoundedErr elo = round_err(val - lo);
   RoundedErr ehi = round_err(hi - val);
-  double min_digit = std::min(elo.digit, ehi.digit);
+  // fmin, not std::min: a negative error (value outside [lo,hi], tolerated
+  // by round_conf.sl:29 "live_dangerously") makes round_err return
+  // digit=NaN, and S-Lang _min(NaN,x)==x while std::min(NaN,x) would return
+  // NaN and poison the result (prescribed c1_HE row of the 872... fixture).
+  double min_digit = std::fmin(elo.digit, ehi.digit);
   if (elo.digit != ehi.digit) {
     elo = round_err_digits(val - lo, min_digit);
     ehi = round_err_digits(hi - val, min_digit);

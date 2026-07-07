@@ -124,4 +124,68 @@ void write_stellar_txt(const std::string& path,
               cols);
 }
 
+void write_mag_txt(const std::string& path,
+                   const std::vector<MagFluxRow>& rows) {
+  std::ofstream os(path);
+  if (!os) throw std::runtime_error("cannot write " + path);
+  std::vector<std::vector<std::string>> cols(12);
+  for (const auto& r : rows) {
+    cols[0].push_back(slang_repr(r.lambda_min));
+    cols[1].push_back(slang_repr(r.lambda));
+    cols[2].push_back(slang_repr(r.lambda_max));
+    cols[3].push_back(slang_repr(r.flux_min));
+    cols[4].push_back(slang_repr(r.flux));
+    cols[5].push_back(slang_repr(r.flux_max));
+    cols[6].push_back(slang_repr(r.diff));
+    cols[7].push_back(slang_repr(r.diff_err));
+    cols[8].push_back(r.passband);
+    cols[9].push_back(r.system);
+    cols[10].push_back(std::to_string(r.flag));
+    cols[11].push_back(r.vizier_catalog);
+  }
+  write_table(os,
+              {"lambda_min", "lambda", "lambda_max", "flux_min", "flux",
+               "flux_max", "diff", "diff_err", "passband", "system", "flag",
+               "VizieR_catalog"},
+              cols);
+}
+
+void write_col_txt(const std::string& path,
+                   const std::vector<ColFluxRow>& rows) {
+  std::ofstream os(path);
+  if (!os) throw std::runtime_error("cannot write " + path);
+  std::vector<std::vector<std::string>> cols(6);
+  for (const auto& r : rows) {
+    cols[0].push_back(slang_repr(r.diff));
+    cols[1].push_back(slang_repr(r.diff_err));
+    cols[2].push_back(r.passband);
+    cols[3].push_back(r.system);
+    cols[4].push_back(std::to_string(r.flag));
+    cols[5].push_back(r.vizier_catalog);
+  }
+  write_table(
+      os, {"diff", "diff_err", "passband", "system", "flag", "VizieR_catalog"},
+      cols);
+}
+
+void write_spectrum_txt(const std::string& path, const dvec& l, const dvec& f,
+                        const std::vector<dvec>& f_comp) {
+  std::ofstream os(path);
+  if (!os) throw std::runtime_error("cannot write " + path);
+  std::vector<std::string> header = {"l", "f"};
+  std::vector<std::vector<std::string>> cols;
+  cols.emplace_back();
+  cols.emplace_back();
+  for (size_t i = 0; i < l.size(); ++i) {
+    cols[0].push_back(slang_repr(l[i]));
+    cols[1].push_back(slang_repr(f[i]));
+  }
+  for (size_t c = 0; c < f_comp.size(); ++c) {
+    header.push_back("f_c" + std::to_string(c + 1));
+    cols.emplace_back();
+    for (double v : f_comp[c]) cols.back().push_back(slang_repr(v));
+  }
+  write_table(os, header, cols);
+}
+
 }  // namespace sed

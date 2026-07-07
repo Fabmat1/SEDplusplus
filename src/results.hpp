@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "fitter.hpp"
+#include "magflux.hpp"
 #include "stellar.hpp"
 
 namespace sed {
@@ -29,5 +30,14 @@ struct StellarRow {
 };
 void write_stellar_txt(const std::string& path,
                        const std::vector<StellarRow>& rows);
+
+// print_struct of mout.mag / mout.col (photometry.sl:1352,1357).
+void write_mag_txt(const std::string& path,
+                   const std::vector<MagFluxRow>& rows);
+void write_col_txt(const std::string& path,
+                   const std::vector<ColFluxRow>& rows);
+// print_struct of sout = {l, f [, f_c1, f_c2]} (photometry.sl:1474).
+void write_spectrum_txt(const std::string& path, const dvec& l, const dvec& f,
+                        const std::vector<dvec>& f_comp);
 
 }  // namespace sed

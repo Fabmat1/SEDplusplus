@@ -23,8 +23,12 @@ struct Config {
   std::vector<std::string> bpaths;
 
   int conf_level = 0;
-  bool write_model = true;
-  bool save_MC = false;
+  // Phase-3 output-product toggles (all OFF by default; ISIS defaults differ).
+  bool write_model = false;  // photometry_fit*.txt + model FITS extensions
+  bool write_fits = false;   // SED_results.fits
+  bool write_tex = false;    // photometry_results.tex (+ pdflatex)
+  bool plot = false;         // photometry_SED.pdf (implies write_fits+write_model)
+  bool save_MC = false;      // MC_c* extensions in SED_results.fits
   bool apply_ZPO_corr = true;
   double remove_outliers = 5;
   long nMC = 2000000;
@@ -46,6 +50,7 @@ struct Config {
   std::string refdata;  // stellar_isisscripts refdata directory
   std::string workdir = ".";  // where photometry.dat etc. are read from
   std::string outdir;         // where outputs go (default: workdir)
+  std::string plot_script;    // override for scripts/plot_sed.py
   unsigned long mc_seed = 42;
 
   static Config load(const std::string& json_path);

@@ -2,3 +2,7 @@ build/
 validation/cpp_*/
 *.o
 *.pdf
+validation/*
+!validation/compare*.py
+.claude/*
+configs/*

@@ -35,13 +35,27 @@ struct StellarMCInput {
   double confidence = 0.6827;       // HDI/quantile coverage (p=confidence)
   long n_mc;
   unsigned long seed;
+  // Keep the filtered R/L/M draws in the result (for the SED_results.fits
+  // MC_c* extensions, photometry.sl:1234-1237). Off in bulk mode: 3x n_mc
+  // doubles per component.
+  bool retain_arrays = false;
 };
 
 struct StellarMCResult {
   ModeHDI R, M, L;
+  // v_grav = GM/(Rc) and v_esc = sqrt(2 g R) in km/s (photometry.sl:
+  // 1176-1177), computed from the same draws as R/M/L (after the
+  // parallax/sur_ratio filter) and filtered >0 independently.
+  ModeHDI vgrav, vesc;
   bool valid = false;
+  dvec R_arr, L_arr, M_arr;  // filtered draws; only when retain_arrays
 };
 
 StellarMCResult stellar_mc(const StellarMCInput& in);
+
+// Gaia distance MC (photometry.sl:936-945): mode_and_HDI of
+// 1e3/(parallax + grand()*parallax_error), own RNG stream.
+ModeHDI gaia_distance_mc(double parallax, double parallax_error,
+                         double confidence, long n_mc, unsigned long seed);
 
 }  // namespace sed

@@ -41,8 +41,12 @@ size_t write_cb(char* ptr, size_t size, size_t nmemb, void* userdata) {
 }
 
 // Shared setup for GET/POST. Returns the performed Response or throws.
+// max_tls12: some legacy archive servers (e.g. archive.stsci.edu/pub) fail the
+// default TLS 1.3 handshake; on CURLE_SSL_CONNECT_ERROR we retry once capped
+// at TLS 1.2 (wget/GnuTLS negotiates these hosts fine, so ISIS never saw it).
 Response perform(const std::string& url, const Options& opt, bool is_post,
-                 const std::string& body, const std::string& content_type) {
+                 const std::string& body, const std::string& content_type,
+                 bool max_tls12 = false) {
   ensure_global();
   throttle_gate();
 
@@ -73,6 +77,9 @@ Response perform(const std::string& url, const Options& opt, bool is_post,
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)body.size());
   }
   if (header_list) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_list);
+  if (max_tls12)
+    curl_easy_setopt(curl, CURLOPT_SSLVERSION,
+                     CURL_SSLVERSION_TLSv1_0 | CURL_SSLVERSION_MAX_TLSv1_2);
 
   CURLcode rc = curl_easy_perform(curl);
   if (rc == CURLE_OK)
@@ -81,6 +88,8 @@ Response perform(const std::string& url, const Options& opt, bool is_post,
   if (header_list) curl_slist_free_all(header_list);
   curl_easy_cleanup(curl);
 
+  if (rc == CURLE_SSL_CONNECT_ERROR && !max_tls12)
+    return perform(url, opt, is_post, body, content_type, /*max_tls12=*/true);
   if (rc != CURLE_OK)
     throw std::runtime_error(std::string("HTTP request failed: ") +
                              curl_easy_strerror(rc) + " (" + url + ")");

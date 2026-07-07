@@ -1,6 +1,7 @@
 #include "query.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <charconv>
 #include <cmath>
 #include <cstdio>
@@ -13,6 +14,7 @@
 
 #include "catalog_registry.hpp"
 #include "http.hpp"
+#include "spectra.hpp"
 #include "texval.hpp"
 #include "util.hpp"
 #include "votable.hpp"
@@ -29,6 +31,22 @@ double flat_dist_arcsec(double ra, double dec, double r, double d) {
   double dr = (r - ra) * std::cos(dec * kPi / 180.0);
   double dd = d - dec;
   return 3600.0 * std::sqrt(dr * dr + dd * dd);
+}
+
+// Parse a whitespace-separated list of numbers (JPLUS vector cells arrive as
+// "14.6280 14.7065 ..."). Empty/"NaN" cells yield an empty vector.
+std::vector<double> split_floats(const std::string& s) {
+  std::vector<double> out;
+  const char* p = s.c_str();
+  const char* end = p + s.size();
+  while (p < end) {
+    char* q = nullptr;
+    double v = std::strtod(p, &q);
+    if (q == p) break;  // no progress -> stop
+    out.push_back(v);
+    p = q;
+  }
+  return out;
 }
 
 // A single catalogue row, exposed by (case-insensitive-fallback) field name.
@@ -97,6 +115,9 @@ std::optional<Row> closest_row(const votable::Table* t,
       ide = t->field_index(alt);
       if (ide >= 0) break;
     }
+  // Case-insensitive last resort (some TAP services return upper-case RA/DEC).
+  if (ira < 0) ira = t->field_index_ci(ra_col);
+  if (ide < 0) ide = t->field_index_ci(dec_col);
   if (ira < 0 || ide < 0) return std::nullopt;
 
   int best = -1;
@@ -176,7 +197,8 @@ void process_filter(const std::string& cat, const CatalogRow& reg,
                                   : std::nan("");
   if (is_nan(magnitude)) return;  // S-Lang skips NaN-magnitude entries
   int flag = 0;
-  const std::string& band = reg.passband;
+  std::string band = reg.passband;    // mutable: a few catalogues relabel it
+  std::string system = reg.system;    // mutable: II/237, III/137 relabel it
   bool disk = std::abs(c.b) < c.disk_b && std::abs(c.l - 180.0) > c.disk_l;
 
   if (cat == "II/246/out") {  // 2MASS
@@ -229,10 +251,21 @@ void process_filter(const std::string& cat, const CatalogRow& reg,
                             std::pow(0.0075 * magnitude, 2));
     if (disk) flag = -4;
     if (is_nan(magnitude) || row.d("nm" + band) == 0 || snr < 2 ||
-        row.d("q_" + band) < 0.5)
+        row.d("q_" + band) < 0.5) {
       flag = -1;
-    else if (((long)row.d("Flags" + band) & 32L) != 0)  // bit 6 (Saturated)
-      flag = -1;
+    } else {
+      // Faithful port of the S-Lang greedy decomposition (query_photometry.sl
+      // ~1375): subtract 2^(k-1) for k=7..0 and flag if bit 6 (k==6, the "32"
+      // step reached after removing a leading 64) is encoded. This is NOT a
+      // plain (Flags & 32) test: e.g. Flags=128 -> -64 -> 64 -> -32 -> flag.
+      double temp = row.d("Flags" + band);
+      for (int k = 7; k >= 0; --k) {
+        if (temp >= std::pow(2.0, k - 1)) {
+          temp -= std::pow(2.0, k - 1);
+          if (k == 6) { flag = -1; break; }
+        }
+      }
+    }
   } else if (cat == "II/365/catwise") {  // CatWISE2020
     if (magnitude > 16.5 && mag_error > 0.)
       mag_error = std::sqrt(mag_error * mag_error +
@@ -295,11 +328,201 @@ void process_filter(const std::string& cat, const CatalogRow& reg,
     if (!(magnitude > -9) || !(mag_error > 0) || row.d(errbits) > 12 ||
         row.d("pStar") < 0.05)
       flag = -1;
+  } else if (cat == "II/357/des_dr1") {  // DES DR1 (superseded by DR2 -> -3)
+    flag = -3;
+    if (row.d(band + "IsoFl") == 1 || row.d("S/G" + band) < 0.5 ||
+        row.d("N" + band) == 0 || row.d(band + "Flag") > 4)
+      flag = -1;
+    // (the flag==0 DES_DR2 supersession block is unreachable: flag is -3/-1)
+  } else if (cat == "B/denis/denis" || cat == "J/A+A/413/1037/table1") {
+    if (is_nan(magnitude) || is_nan(mag_error) || mag_error > 0.8 ||
+        magnitude < 0)
+      flag = -1;
+    if (cat == "B/denis/denis") {  // DENIS also has per-band quality flags
+      double q = row.d("q_" + reg.filter_colname);
+      double fl = row.d(band + "flg");
+      if (is_nan(q) || q < 90 || is_nan(fl) || fl > 0) flag = -1;
+    }
+  } else if (cat == "Skymapper_DR4") {  // SkyMapper DR4 (TAP)
+    if (row.d(band + "_flags") > 0 || row.d(band + "_nimaflags") > 0 ||
+        row.d(band + "_ngood") < 2)
+      flag = -1;
+  } else if (cat == "II/59B/catalog") {  // TD1: flux (erg/cm2/s/A) -> mag
+    if (magnitude < 0) flag = -1;
+    auto re = round_err(std::abs(-2.5 / std::log(10.0) * mag_error / magnitude));
+    magnitude = round2(-2.5 * std::log10(magnitude) - 21.175, (int)re.digit - 1);
+    mag_error = re.value;
+  } else if (cat == "J/ApJS/96/461/table2") {  // FAUST: flux -> mag (no const)
+    if (magnitude < 0) flag = -1;
+    auto re = round_err(std::abs(-2.5 / std::log(10.0) * mag_error / magnitude));
+    magnitude = round2(-2.5 * std::log10(magnitude), (int)re.digit - 1);
+    mag_error = re.value;
+  } else if (cat == "II/169/main") {  // Geneva: uncertainties in mmag
+    mag_error /= 1000.0;
+  } else if (cat == "II/237/colors") {  // Ducati: color-sign conventions
+    if (band == "VmR" || band == "VmI")
+      magnitude *= -1.0;  // R-V -> V-R, I-V -> V-I
+    else if (band == "UmB")
+      magnitude = row.d("U-V") - row.d("B-V");  // U-B = (U-V) - (B-V)
+  } else if (cat == "I/320/spm4") {  // SPM4 unreliable
+    mag_error = 0.1;
+    flag = -5;
+  } else if (cat == "I/259/tyc2") {  // Tycho-2 rarely reliable
+    flag = -5;
+  } else if (cat == "J/AJ/128/1606/lmcps") {
+    if (row.d("Flag") != 0) flag = -1;
+  } else if (cat == "J/AcA/50/307/phot") {  // OGLE: <4 measurements -> flag -1
+    if (band == "V" && row.d("Vdat") <= 3) flag = -1;
+    if (band == "B" && row.d("Bdat") <= 3) flag = -1;
+    if (band == "I" && row.d("Idat") <= 3) flag = -1;
+  } else if (cat == "II/262/batc") {  // BATC: flag remarked variables/blends
+    std::string rem = row.s("Rem");
+    for (char ch : {'b', 'd', 'e', 'm', 's', 't', 'x'})
+      if (rem.find(ch) != std::string::npos) { flag = -1; break; }
+  } else if (cat == "II/347/kids_dr3") {  // KiDS
+    std::string fl = reg.filter_colname;  // umag -> uflg
+    auto p = fl.find("mag");
+    if (p != std::string::npos) fl.replace(p, 3, "flg");
+    if (row.d(fl) > 1) flag = -1;
+  } else if (cat == "II/350/vstatlas") {  // VST ATLAS
+    std::string pb = reg.filter_colname;  // Uap3 -> Uperrbits
+    auto p = pb.find("ap3");
+    if (p != std::string::npos) pb.replace(p, 3, "perrbits");
+    double perr = row.d(pb);
+    if (!is_nan(perr) && perr > 0) flag = -1;
+  } else if (cat == "J/MNRAS/287/867/table1" ||
+             cat == "J/MNRAS/431/240/table3" ||
+             cat == "J/MNRAS/453/1879/table2" ||
+             cat == "J/MNRAS/453/1879/table3" ||
+             cat == "J/MNRAS/459/4343/table3") {  // Edinburgh-Cape surveys
+    if (row.s("u_" + reg.filter_colname) != " ") flag = -1;
+  } else if (cat == "J/AJ/144/24/kisdr2") {  // KIS
+    double cl = row.d(band + "cl");
+    if (!(cl == 0 || cl == -1)) flag = -1;
+  } else if (cat == "J/ApJS/249/18/table3") {  // ZTF (Amp is the "error")
+    if (!is_nan(mag_error) && mag_error > 0.0) mag_error /= std::sqrt(2.0);
+    if (row.d(band + "Amp") > 0.3) flag = -1;
+  } else if (cat == "II/305/catalog") {  // Spitzer SAGE
+    std::string dot = band; std::replace(dot.begin(), dot.end(), '_', '.');
+    if (row.d("q_[" + dot + "]") != 0) flag = -1;
+    if (is_nan(mag_error)) flag = -1;
+  } else if (cat == "II/293/glimpse") {  // Spitzer GLIMPSE
+    std::string dot = band; std::replace(dot.begin(), dot.end(), '_', '.');
+    double gf = row.d("q_" + dot + "mag");
+    if (is_nan(gf) || gf != 0) flag = -1;
+    if (is_nan(mag_error)) flag = -1;
+  } else if (cat == "J/ApJS/254/11/spikes") {  // Spitzer SpiKeS
+    double sf = std::abs(row.d("Flags"));
+    if (is_nan(sf) || sf != 0) flag = -1;
+    if (is_nan(mag_error)) flag = -1;
+  } else if (cat == "J/MNRAS/459/1403/catalog") {  // Spitzer M31
+    if (row.d("S/G") < 0.5 || row.d("Flags") > 0.01) flag = -1;
+    if (is_nan(mag_error)) flag = -1;
+  } else if (cat == "II/368/sstsl2") {  // Spitzer SEIP: uJy -> Vega mag
+    const char* col_snr = nullptr;
+    double vega_log10 = 0.0, xflag = 0.0;
+    if (band == "3_6") { col_snr = "3.6SNR"; vega_log10 = -20.55505; xflag = row.d("FSx3.6"); }
+    else if (band == "4_5") { col_snr = "4.5SNR"; vega_log10 = -20.74452; xflag = row.d("FSx4.5"); }
+    else if (band == "5_8") { col_snr = "5.8SNR"; vega_log10 = -20.93988; xflag = row.d("FSx5.8"); }
+    else if (band == "8_0") { col_snr = "8.0SNR"; vega_log10 = -21.19603; xflag = row.d("FSx8.0"); }
+    else if (band == "24") { col_snr = "24SNR"; vega_log10 = -22.14436; }
+    if (!is_nan(magnitude)) {
+      if (!is_nan(mag_error)) mag_error = 1.085736 * (mag_error / magnitude);
+      magnitude = -2.5 * (std::log10(magnitude) - 29 - vega_log10);
+    }
+    if (xflag >= 8) flag = -1;
+    double snr = col_snr ? row.d(col_snr) : 0.0;
+    if (snr < 30.0) flag = -1;
+    if (is_nan(mag_error) || mag_error <= 0 || magnitude <= -9) flag = -1;
+  } else if (cat == "II/339/uvotssc1") {  // Swift/UVOT
+    if (row.d("f" + band) != 0 || row.d("x" + band) != 0 ||
+        row.d("s" + band) < 3.0)
+      flag = -1;
+  } else if (cat == "II/356/xmmom41s") {  // XMM-OM
+    if (row.d("x" + band) != 0 || row.d("sig(" + band + ")") < 3.0 ||
+        row.s("q." + band).find('T') != std::string::npos)
+      flag = -1;
+  } else if (cat == "J/AJ/150/176/table3") {  // 2MASS-in-GC: -3 if real 2MASS
+    if (flag == 0 && magnitude < 13.0 && has_prior(entries, "II/246/out", band))
+      flag = -3;
+  } else if (cat == "II/380/splusdr4") {  // S-PLUS DR4
+    if (row.d("SNR" + band) < 15.0) flag = -1;
+    if (!is_nan(mag_error) && mag_error <= 0.0) flag = -1;
+    if (!is_nan(mag_error) && mag_error > 0.15) flag = -1;
+    if (flag == 0) mag_error = std::sqrt(mag_error * mag_error + 0.015 * 0.015);
+  } else if (cat == "DES_DR2") {  // Dark Energy Survey DR2 (datalab)
+    std::string lb = band; for (auto& ch : lb) ch = std::tolower(ch);
+    if (row.d("wavg_mag_psf_" + lb) < -98.9 ||
+        row.d("wavg_magerr_psf_" + lb) < -98.9 || row.d("flags_" + lb) > 3)
+      flag = -1;
+  } else if (cat == "DECaPS_DR1") {  // DECam Plane Survey (datalab)
+    std::string lb = band; for (auto& ch : lb) ch = std::tolower(ch);
+    if (row.d("nmag_ok_" + lb) < 1) flag = -1;
+  } else if (cat == "SMASH_DR2") {  // SMASH (datalab)
+    std::string lb = band; for (auto& ch : lb) ch = std::tolower(ch);
+    if (row.d(lb + "mag") > 98.9 || row.d(lb + "err") > 98.9 ||
+        row.d("flag") > 3)
+      flag = -1;
+  } else if (cat == "HSC") {  // Hubble Source Catalog: never well calibrated
+    flag = -1;
+  } else if (cat == "VHS_DR6" || cat == "VIKING_DR4" || cat == "VMC_DR4" ||
+             cat == "VVV_DR4" || cat == "VIDEO_DR5") {  // VISTA (VSA TAP)
+    mag_error = std::sqrt(mag_error * mag_error + 0.01 * 0.01);
+    std::string eb = reg.filter_colname;  // yAperMag3 -> yppErrBits
+    auto p = eb.find("AperMag3");
+    if (p != std::string::npos) eb.replace(p, 8, "ppErrBits");
+    if (!(magnitude > -9) || !(mag_error > 0) || row.d(eb) > 65535) flag = -1;
+  } else if (cat == "UHS_DR3") {  // UKIRT Hemisphere Survey (WSA TAP)
+    std::string eb = reg.filter_colname;  // jAperMag3 -> jErrBits
+    auto p = eb.find("AperMag3");
+    if (p != std::string::npos) eb.replace(p, 8, "ErrBits");
+    if (!(magnitude > -9) || !(mag_error > 0) || row.d(eb) > 12) flag = -1;
+  } else if (cat == "III/137/catalog") {  // Kilkenny hot subdwarfs
+    // Reassign system/passband when only Johnson (ci2) or only V is present.
+    if (is_nan(row.d("ci3"))) {
+      if (is_nan(row.d("ci2"))) {
+        flag = -1;
+        if (reg.filter_colname == "Vmag") { band = "V"; system = "Johnson"; }
+      } else {
+        system = "Johnson";
+        if (reg.filter_colname == "Vmag") band = "V";
+        else if (reg.filter_colname == "ci1") band = "BmV";
+        else if (reg.filter_colname == "ci2") band = "UmB";
+      }
+    }
   }
   // (other catalogues fall through with flag 0 and direct magnitude/error)
 
-  add_entry(entries, flag, reg.system, band, magnitude, mag_error, reg.type,
+  // "Hbeta_AF" is redundant with "Hbeta_B" (used by default) -> flag 1.
+  if (band == "Hbeta_AF") flag = 1;
+
+  add_entry(entries, flag, system, band, magnitude, mag_error, reg.type,
             row.angu_dist_arcsec, cat);
+}
+
+// JPLUS DR3 uses a "vector" TAP layout: one row carries all 12 filter mags in a
+// single whitespace-separated cell. Port of the JPLUS special-case block:
+// magnitudes from mag_iso_worstpsf, errors from mag_err_psfcor, flags from the
+// flags vector, in the fixed order r,g,i,z,u,J0378...J0861.
+void process_jplus(const Row& row, const CatalogRow& reg,
+                   std::vector<PhotEntry>& entries) {
+  static const char* names[12] = {"r",     "g",     "i",     "z",
+                                   "u",     "J0378", "J0395", "J0410",
+                                   "J0430", "J0515", "J0660", "J0861"};
+  auto vals = split_floats(row.s("mag_iso_worstpsf"));
+  auto errs = split_floats(row.s("mag_err_psfcor"));
+  auto flags = split_floats(row.s("flags"));
+  if (vals.size() < 12 || errs.size() < 12 || flags.size() < 12) return;
+  double class_star = row.d("class_star");
+  for (int k = 0; k < 12; ++k) {
+    int flag = 0;
+    // The S-Lang mask duplicate makes the 2048 exemption a no-op: any nonzero
+    // flag, low star-ness, sentinel mag (>98.9) or error (>5) -> internal flag.
+    if (flags[k] != 0 || class_star < 0.5 || vals[k] > 98.9 || errs[k] > 5.0)
+      flag = -1;
+    add_entry(entries, flag, reg.system, names[k], vals[k], errs[k], reg.type,
+              row.angu_dist_arcsec, reg.catalogue);
+  }
 }
 
 // Issue a synchronous TAP query and return its first non-empty table.
@@ -330,13 +553,24 @@ std::optional<votable::Table> tap_query(const std::string& base_url,
   return std::nullopt;
 }
 
-// Build the ADQL box query for a non-VizieR catalogue, or "" if unsupported.
+// TAP service base URL for a non-VizieR catalogue, or "" if unsupported.
 std::string tap_url_for(const std::string& cat) {
   if (cat == "PS1_DR2") return "https://mast.stsci.edu/vo-tap/api/v0.1/ps1dr2/";
-  if (cat == "DELVE_DR2") return "https://datalab.noirlab.edu/tap";
+  if (cat == "DELVE_DR2" || cat == "DES_DR2" || cat == "DECaPS_DR1" ||
+      cat == "SMASH_DR2")
+    return "https://datalab.noirlab.edu/tap";
+  if (cat == "Skymapper_DR4") return "https://api.skymapper.nci.org.au/public/tap/";
+  if (cat == "JPLUS_DR3")
+    return "https://archive.cefca.es/catalogues/vo/tap/jplus-dr3";
+  if (cat == "HSC") return "http://vao.stsci.edu/hscv3tap/tapservice.aspx";
   if (cat == "GPS_DR11" || cat == "LAS_DR11" || cat == "GCS_DR11" ||
-      cat == "DXS_DR11" || cat == "UDS_DR11")
+      cat == "DXS_DR11" || cat == "UDS_DR11" || cat == "UHS_DR3")
     return "http://tap.roe.ac.uk/wsa";
+  if (cat == "VHS_DR6") return "http://wfaudata.roe.ac.uk/vhsDR6-dsa/TAP";
+  if (cat == "VIKING_DR4") return "http://wfaudata.roe.ac.uk/vikingDR4-dsa/TAP";
+  if (cat == "VMC_DR4") return "http://wfaudata.roe.ac.uk/vmcDR4-dsa/TAP";
+  if (cat == "VVV_DR4") return "http://wfaudata.roe.ac.uk/vvvDR4-dsa/TAP";
+  if (cat == "VIDEO_DR5") return "http://wfaudata.roe.ac.uk/videoDR5-dsa/TAP";
   return "";
 }
 
@@ -344,7 +578,31 @@ std::string tap_adql_for(const std::string& cat, const CatalogRow& r,
                          double ra, double dec, double rad_deg) {
   double lo_ra = ra - rad_deg, hi_ra = ra + rad_deg;
   double lo_de = dec - rad_deg, hi_de = dec + rad_deg;
-  char q[512];
+  char q[640];
+  // Cone-search (CONTAINS) catalogues: SkyMapper, JPLUS, HSC.
+  if (cat == "Skymapper_DR4") {
+    std::snprintf(q, sizeof(q),
+                  "SELECT * FROM dr4.master WHERE 1=CONTAINS(POINT('ICRS', "
+                  "raj2000, dej2000), CIRCLE('ICRS', %f, %f, %f))",
+                  ra, dec, rad_deg);
+    return q;
+  }
+  if (cat == "JPLUS_DR3") {
+    std::snprintf(q, sizeof(q),
+                  "SELECT * FROM jplus.MagABDualObj WHERE 1=CONTAINS(POINT("
+                  "'ICRS', alpha_j2000, delta_j2000), CIRCLE('ICRS', %f, %f, "
+                  "%f))",
+                  ra, dec, rad_deg);
+    return q;
+  }
+  if (cat == "HSC") {
+    std::snprintf(q, sizeof(q),
+                  "SELECT * FROM dbo.SumPropMagAutoCat JOIN dbo.SumMagAutoCat "
+                  "USING (MatchID) WHERE (MatchRA BETWEEN %f AND %f) AND "
+                  "(MatchDec BETWEEN %f AND %f)",
+                  lo_ra, hi_ra, lo_de, hi_de);
+    return q;
+  }
   const char *table = nullptr, *rac = "RA", *dec_c = "DEC";
   if (cat == "PS1_DR2") {
     table = "dbo.MeanObjectView";
@@ -352,6 +610,24 @@ std::string tap_adql_for(const std::string& cat, const CatalogRow& r,
     dec_c = r.dec_colname.c_str();
   } else if (cat == "DELVE_DR2") {
     table = "delve_dr2.objects";
+  } else if (cat == "DES_DR2") {
+    table = "des_dr2.mag";
+  } else if (cat == "DECaPS_DR1") {
+    table = "decaps_dr1.object"; rac = "ra"; dec_c = "dec";
+  } else if (cat == "SMASH_DR2") {
+    table = "smash_dr2.object";
+  } else if (cat == "VHS_DR6") {
+    table = "vhsSource"; rac = "ra"; dec_c = "dec";
+  } else if (cat == "VIKING_DR4") {
+    table = "vikingSource"; rac = "ra"; dec_c = "dec";
+  } else if (cat == "VMC_DR4") {
+    table = "vmcSource"; rac = "ra"; dec_c = "dec";
+  } else if (cat == "VVV_DR4") {
+    table = "vvvSource"; rac = "ra"; dec_c = "dec";
+  } else if (cat == "VIDEO_DR5") {
+    table = "videoSource"; rac = "ra"; dec_c = "dec";
+  } else if (cat == "UHS_DR3") {
+    table = "UHSDR3.uhsSource"; rac = "ra"; dec_c = "dec";
   } else if (cat == "GPS_DR11") {
     table = "UKIDSSDR11PLUS.gpsSource"; rac = "ra"; dec_c = "dec";
   } else if (cat == "LAS_DR11") {
@@ -372,7 +648,44 @@ std::string tap_adql_for(const std::string& cat, const CatalogRow& r,
   return q;
 }
 
+// Issue the bulk VizieR VOTable request, falling over between mirrors. The
+// S-Lang hard-codes `vizier.u-strasbg.fr`, but that host is intermittently
+// unreachable; every mirror serves a byte-identical multi-TABLE VOTable (same
+// `ID="<cat with / -> _>"` grouping), so the fall-over changes nothing about
+// parity — only which host answers. The first mirror that returns a parseable
+// document with >=1 TABLE wins; on transport error/timeout the next is tried.
+votable::Document vizier_bulk(const std::string& source, double ra, double dec,
+                              double maxr_arcsec) {
+  static const char* kMirrors[] = {
+      "https://vizier.cfa.harvard.edu/viz-bin/votable",
+      "http://vizier.u-strasbg.fr/viz-bin/votable",
+      "https://vizier.cds.unistra.fr/viz-bin/votable",
+  };
+  char params[8192];
+  std::snprintf(params, sizeof(params),
+                "?-source=%s&-c=%.6f%%20%+.6f&-c.rs=%.4f&-out.add=_r&-out.all",
+                source.c_str(), ra, dec, maxr_arcsec);
+  http::Options opt;
+  opt.timeout_s = 90;  // a working mirror answers in seconds; bail a dead one
+  for (const char* base : kMirrors) {
+    try {
+      auto resp = sed::http::get(std::string(base) + params, opt);
+      if (!resp.ok()) continue;
+      auto doc = votable::parse(resp.body);
+      if (!doc.tables.empty()) return doc;
+    } catch (const std::exception&) {
+      continue;  // DNS/connect/timeout -> try the next mirror
+    }
+  }
+  return {};
+}
+
 }  // namespace
+
+votable::Document vizier_fetch(const std::string& source, double ra,
+                               double dec, double maxr_arcsec) {
+  return vizier_bulk(source, ra, dec, maxr_arcsec);
+}
 
 void radec2lb(double ra, double dec, double& l, double& b) {
   const double d2r = kPi / 180.0;
@@ -400,7 +713,9 @@ double angular_separation_deg(double ra1, double dec1, double ra2,
                 std::cos(dec1) * std::cos(dec2) * std::cos(ra1 - ra2);
   if (std::abs(temp) > 1)
     temp -= (temp > 0 ? 1 : -1) * 2.220446049250313e-16;
-  return std::acos(temp) / d2r;
+  // S-Lang: `angusep *= 180./PI` -- multiply by the reciprocal, NOT divide by
+  // PI/180 (1-ulp difference, observable in printed angu_dist_arcsec).
+  return std::acos(temp) * (180.0 / kPi);
 }
 
 PhotometryTable query_photometry(double ra, double dec,
@@ -445,14 +760,7 @@ PhotometryTable query_photometry(double ra, double dec,
     std::string source;
     for (size_t i = 0; i < vz_cats.size(); ++i)
       source += (i ? "," : "") + vz_cats[i];
-    char params[8192];
-    std::snprintf(params, sizeof(params),
-                  "-source=%s&-c=%.6f%%20%+.6f&-c.rs=%.4f&-out.add=_r&-out.all",
-                  source.c_str(), ra, dec, vz_maxr);
-    std::string url =
-        std::string("http://vizier.u-strasbg.fr/viz-bin/votable?") + params;
-    auto resp = sed::http::get(url);
-    if (resp.ok()) doc = votable::parse(resp.body);
+    doc = vizier_bulk(source, ra, dec, vz_maxr);
   }
 
   // ---- Process every catalogue in byte-sorted order -------------------------
@@ -485,11 +793,28 @@ PhotometryTable query_photometry(double ra, double dec,
     }
     if (!row) continue;
 
-    for (const auto& reg_row : rows)
-      process_filter(cat, reg_row, *row, ctx, table.entries);
+    if (cat == "JPLUS_DR3") {  // vector TAP layout: all 12 filters in one row
+      process_jplus(*row, r0, table.entries);
+    } else {
+      for (const auto& reg_row : rows)
+        process_filter(cat, reg_row, *row, ctx, table.entries);
+    }
   }
 
-  // Cosmetic: stable sort by photometric system (fit is order-independent).
+  // ---- Box filters from spectra (query_photometry.sl:1850-2052) -------------
+  // Gaia XP always attempted; IUE/MAST per the qualifiers (template: both on).
+  {
+    SpectraOptions sopt;
+    sopt.search_radius_deg = opt.search_radius_deg;
+    sopt.force_search_radius = opt.force_search_radius;
+    sopt.iue = opt.iue;
+    sopt.mast = opt.mast;
+    sopt.cache_dir = opt.spectra_dir;
+    add_spectra_boxes(ra, dec, sopt, table.entries);
+  }
+
+  // Final re-sort by photometric system (query_photometry.sl:2054;
+  // array_sort is stable, so insertion order is preserved within a system).
   std::stable_sort(table.entries.begin(), table.entries.end(),
                    [](const PhotEntry& a, const PhotEntry& b) {
                      return a.system < b.system;

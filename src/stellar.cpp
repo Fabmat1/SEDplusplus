@@ -12,6 +12,7 @@ constexpr double Const_pc_cgs = 3.0856775814913674e18;
 constexpr double Const_Rsun_cgs = 6.957e10;
 constexpr double Const_GMsun_cgs = 1.3271244e26;
 constexpr double Const_Teffsun = 5772.0;
+constexpr double Const_c = 2.99792458e10;  // cm/s
 
 // solve (p+1)x(p+1) symmetric system by Gauss-Jordan for SG coefficients
 dvec sg_coefficients(int nl, int nr, int p) {
@@ -218,10 +219,12 @@ StellarMCResult stellar_mc(const StellarMCInput& in) {
   std::normal_distribution<double> gauss(0.0, 1.0);
   const long n = in.n_mc;
 
-  dvec R, M, L;
+  dvec R, M, L, VG, VE;
   R.reserve(n);
   M.reserve(n);
   L.reserve(n);
+  VG.reserve(n);
+  VE.reserve(n);
   auto asym = [&](double value, double dminus, double dplus) {
     double g = gauss(rng);
     return value + (g < 0 ? g * dminus : g * dplus);
@@ -239,17 +242,43 @@ StellarMCResult stellar_mc(const StellarMCInput& in) {
     double m = std::pow(10.0, logg) * r * r * Const_Rsun_cgs * Const_Rsun_cgs /
                Const_GMsun_cgs;
     double l = r * r * std::pow(teff / Const_Teffsun, 4);
+    // photometry.sl:1176-1177 (no new draws -- RNG sequence unchanged)
+    double vg = m * Const_GMsun_cgs / (r * Const_Rsun_cgs * Const_c) / 1e5;
+    double ve = std::sqrt(2.0 * std::pow(10.0, logg) * r * Const_Rsun_cgs) /
+                1e5;
     if (r > 0) R.push_back(r);
     if (m > 0) M.push_back(m);
     if (l > 0) L.push_back(l);
+    if (vg > 0) VG.push_back(vg);
+    if (ve > 0) VE.push_back(ve);
   }
   StellarMCResult out;
+  const double NaN = std::numeric_limits<double>::quiet_NaN();
+  out.vgrav = out.vesc = ModeHDI{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN};
   if (R.size() < 4 || M.size() < 4 || L.size() < 4) return out;
   out.R = mode_and_HDI(R, in.confidence);
   out.M = mode_and_HDI(M, in.confidence);
   out.L = mode_and_HDI(L, in.confidence);
+  if (VG.size() >= 4) out.vgrav = mode_and_HDI(VG, in.confidence);
+  if (VE.size() >= 4) out.vesc = mode_and_HDI(VE, in.confidence);
   out.valid = true;
+  if (in.retain_arrays) {
+    out.R_arr = std::move(R);
+    out.L_arr = std::move(L);
+    out.M_arr = std::move(M);
+  }
   return out;
+}
+
+ModeHDI gaia_distance_mc(double parallax, double parallax_error,
+                         double confidence, long n_mc, unsigned long seed) {
+  std::mt19937_64 rng(seed);
+  std::normal_distribution<double> gauss(0.0, 1.0);
+  // photometry.sl:939-940: no positivity filter on the parallax draws.
+  dvec d(n_mc);
+  for (long i = 0; i < n_mc; ++i)
+    d[i] = 1e3 / (parallax + gauss(rng) * parallax_error);
+  return mode_and_HDI(d, confidence);
 }
 
 }  // namespace sed

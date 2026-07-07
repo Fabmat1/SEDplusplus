@@ -1,6 +1,6 @@
 // sedfit: C++ port of the stellar_isisscripts photometry.sl SED-fitting
-// pipeline (fit engine only; photometry/astrometry are read from cached
-// files produced by the original pipeline, remote querying comes later).
+// pipeline. Photometry, reddening, and Gaia DR3 astrometry are queried live
+// when no cached files from the original pipeline are present.
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -12,15 +12,22 @@
 #include <set>
 #include <string>
 
+#include "astrometry.hpp"
 #include "config.hpp"
+#include "simbad.hpp"
+#include "extinction.hpp"
 #include "fitfun.hpp"
 #include "fitter.hpp"
+#include "magflux.hpp"
 #include "modelgrid.hpp"
 #include "photometry_table.hpp"
 #include "query.hpp"
 #include "reddening.hpp"
 #include "results.hpp"
+#include "spectrum.hpp"
 #include "stellar.hpp"
+#include "fitsout.hpp"
+#include "texout.hpp"
 #include "texval.hpp"
 
 using namespace sed;
@@ -41,11 +48,41 @@ std::string fmt(const char* f, double v) {
   return buf;
 }
 
-// Build photometry.dat from (ra, dec): remote query + IRSA reddening, then
-// write in photometric_table.sl format. Mirrors query_photometry followed by
-// query_reddening in the template.
+// Strict double parse: true only if the whole token is a number.
+bool parse_double(const char* s, double& out) {
+  char* end = nullptr;
+  double v = std::strtod(s, &end);
+  if (end == s || *end != '\0') return false;
+  out = v;
+  return true;
+}
+
+// Resolve an object name to coordinates via SIMBAD, or exit(1) with the same
+// DataError-style message the template throws on an unresolvable object.
+void resolve_or_die(const std::string& name, double& ra, double& dec) {
+  std::string star = normalize_star_name(name);
+  auto s = resolve_simbad(star);
+  if (!s) {
+    std::fprintf(stderr,
+                 "Data error: Object '%s' could not be resolved and no "
+                 "coordinates were provided either.\n",
+                 star.c_str());
+    std::exit(1);
+  }
+  ra = s->ra;
+  dec = s->dec;
+}
+
+// Build photometry.dat from (ra, dec): remote query (IUE+MAST spectra boxes
+// enabled, mirroring the template's `query_photometry(...; IUE, MAST, ...)`)
+// + IRSA reddening, then write in photometric_table.sl format. Downloaded
+// spectra are cached in IUE/ and MAST/ next to the output file (ISIS caches
+// them in $cwd, which is where the template writes photometry.dat).
 void build_photometry(double ra, double dec, const std::string& outfile) {
-  PhotometryTable phot = query_photometry(ra, dec);
+  QueryOptions qopt;
+  std::string dir = std::filesystem::path(outfile).parent_path().string();
+  qopt.spectra_dir = dir.empty() ? "." : dir;
+  PhotometryTable phot = query_photometry(ra, dec, qopt);
   try {
     phot.reddening = query_reddening(ra, dec);
   } catch (const std::exception& e) {
@@ -59,15 +96,64 @@ void build_photometry(double ra, double dec, const std::string& outfile) {
 int main(int argc, char** argv) {
   auto t0 = std::chrono::steady_clock::now();
   // Standalone query mode: sedfit --query <ra> <dec> <out.dat>
-  if (argc == 5 && std::string(argv[1]) == "--query") {
-    build_photometry(std::atof(argv[2]), std::atof(argv[3]), argv[4]);
-    std::fprintf(stderr, "- wrote %s\n", argv[4]);
+  //                    or:  sedfit --query <name> <out.dat>
+  if (argc >= 4 && std::string(argv[1]) == "--query") {
+    double ra, dec;
+    const char* out = nullptr;
+    if (argc == 5 && parse_double(argv[2], ra) && parse_double(argv[3], dec)) {
+      out = argv[4];
+    } else if (argc == 4) {
+      resolve_or_die(argv[2], ra, dec);
+      out = argv[3];
+    } else {
+      std::fprintf(stderr,
+                   "usage: sedfit --query <ra> <dec> <out.dat>\n"
+                   "       sedfit --query <name> <out.dat>\n");
+      return 1;
+    }
+    build_photometry(ra, dec, out);
+    std::fprintf(stderr, "- wrote %s\n", out);
+    return 0;
+  }
+  // Standalone astrometry mode: sedfit --astrometry <ra> <dec>
+  //                        or:  sedfit --astrometry <name>
+  // Prints the header-line-3 fields (%.3g, same as photometry_results.txt).
+  if (argc >= 3 && std::string(argv[1]) == "--astrometry") {
+    double ra, dec;
+    if (argc == 4 && parse_double(argv[2], ra) && parse_double(argv[3], dec)) {
+      // numeric coordinates (unchanged path)
+    } else if (argc == 3) {
+      resolve_or_die(argv[2], ra, dec);
+    } else {
+      std::fprintf(stderr,
+                   "usage: sedfit --astrometry <ra> <dec>\n"
+                   "       sedfit --astrometry <name>\n");
+      return 1;
+    }
+    auto q = query_astrometry(ra, dec);
+    if (!q) {
+      std::fprintf(stderr, "no astrometry found\n");
+      return 1;
+    }
+    std::printf(
+        "designation = %s; good = %d;\n"
+        "ruwe = %.3g; ipd_gof_harmonic_amplitude = %.3g; "
+        "visibility_periods_used = %.3g; parallax = %.3g; "
+        "parallax_error = %.3g; \n",
+        q->designation.c_str(), q->good ? 1 : 0,
+        q->ruwe.value_or(std::nan("")),
+        q->ipd_gof_harmonic_amplitude.value_or(std::nan("")),
+        q->visibility_periods_used.value_or(std::nan("")), q->parallax,
+        q->parallax_error);
     return 0;
   }
   if (argc != 2) {
     std::fprintf(stderr,
                  "usage: sedfit <config.json>\n"
-                 "       sedfit --query <ra> <dec> <out.dat>\n");
+                 "       sedfit --query <ra> <dec> <out.dat>\n"
+                 "       sedfit --query <name> <out.dat>\n"
+                 "       sedfit --astrometry <ra> <dec>\n"
+                 "       sedfit --astrometry <name>\n");
     return 1;
   }
   Config cfg = Config::load(argv[1]);
@@ -75,7 +161,8 @@ int main(int argc, char** argv) {
   const std::string base_out = cfg.outdir + "/" + cfg.basename;
   std::filesystem::create_directories(cfg.outdir);
 
-  // ---------------- astrometry (from cached results header or fix_distance)
+  // ---------------- astrometry (cached results header, fix_distance, or live
+  // Gaia DR3 query -- same precedence as the template)
   std::optional<Astrometry> astrometry;
   bool good_astrometry = false;
   auto hdr = ResultsHeader::read(base_in + "photometry_results.txt");
@@ -96,6 +183,21 @@ int main(int argc, char** argv) {
     cfg.ra = a.ra;
     cfg.dec = a.dec;
   }
+  // SIMBAD name resolution (photometry.sl:197-208): only when coordinates are
+  // still unknown after the cached-header / explicit-`coordinates` paths.
+  if ((!cfg.ra || !cfg.dec) && !cfg.star.empty()) {
+    std::string star = normalize_star_name(cfg.star);
+    std::fprintf(stderr, "- resolving '%s' via SIMBAD ...\n", star.c_str());
+    auto s = resolve_simbad(star);
+    if (!s)
+      throw std::runtime_error(
+          "Data error: Object '" + star +
+          "' could not be resolved and no coordinates were provided either.");
+    cfg.ra = s->ra;
+    cfg.dec = s->dec;
+    std::fprintf(stderr, "  -> RA=%.6f DEC=%.6f (%s)\n", s->ra, s->dec,
+                 s->main_id.c_str());
+  }
   if (!astrometry && cfg.fix_distance) {
     Astrometry a;
     a.parallax = 1.0 / *cfg.fix_distance;
@@ -108,11 +210,32 @@ int main(int argc, char** argv) {
     astrometry = a;
     good_astrometry = true;
   }
+  if (!astrometry && cfg.ra && cfg.dec) {
+    // Live Gaia DR3 TAP query (port of query_astrometry as called in
+    // photometry.sl:213-215). Corrections + NaN-masking happen inside.
+    std::fprintf(stderr, "- querying astrometry for RA=%.6f DEC=%.6f ...\n",
+                 *cfg.ra, *cfg.dec);
+    auto q = query_astrometry(*cfg.ra, *cfg.dec);
+    if (q) {
+      Astrometry a;
+      a.parallax = q->parallax;
+      a.parallax_error = q->parallax_error;
+      a.ruwe = q->ruwe;
+      a.ipd_gof_harmonic_amplitude = q->ipd_gof_harmonic_amplitude;
+      a.visibility_periods_used = q->visibility_periods_used;
+      // The template keeps using the input coordinates (the header RA/DEC are
+      // the requested position, not the Gaia source position).
+      a.ra = *cfg.ra;
+      a.dec = *cfg.dec;
+      astrometry = a;
+      good_astrometry = q->good;
+    }
+  }
   if (!astrometry)
     throw std::runtime_error(
-        "no cached astrometry found (" + base_in +
-        "photometry_results.txt); remote Gaia queries are not implemented in "
-        "this version");
+        "no astrometry available: no cached " + base_in +
+        "photometry_results.txt header, no fix_distance in the config, and "
+        "the live Gaia query found nothing (or no ra/dec in the config)");
   double gdist = 0.0;
   if (good_astrometry) {
     Astrometry& a = *astrometry;
@@ -430,6 +553,8 @@ int main(int argc, char** argv) {
     confidence = 0.99;
     perr_scale = 2.576;
   }
+  std::vector<StellarMCResult> mc_all;  // per component, for the tex table
+  std::vector<std::vector<StellarRow>> stellar_all;  // for SED_results.fits
   if (good_astrometry) {
     for (size_t comp = 1; comp <= grids.size(); ++comp) {
       std::string cstr = "c" + std::to_string(comp);
@@ -478,6 +603,7 @@ int main(int argc, char** argv) {
       in.confidence = confidence;
       in.n_mc = cfg.nMC;
       in.seed = cfg.mc_seed + comp;
+      in.retain_arrays = cfg.save_MC;  // stage 3: MC_c* FITS extensions
 
       StellarMCResult mc = stellar_mc(in);
       // mode_and_HDI at the requested confidence
@@ -500,9 +626,147 @@ int main(int argc, char** argv) {
       push(cstr + "_L", mc.valid ? &mc.L : nullptr);
       write_stellar_txt(
           base_out + "photometry_results_stellar_" + cstr + ".txt", rows);
+      stellar_all.push_back(std::move(rows));
+      mc_all.push_back(std::move(mc));
     }
   }
 
+  // ---------------- photometry_results.tex (photometry.sl:845-1304)
+  if (cfg.write_tex) {
+    TexInput ti;
+    ti.star = cfg.star;
+    ti.conf_level = cfg.conf_level;
+    ti.reddening = phot.reddening;
+    ti.good_astrometry = good_astrometry;
+    ti.parallax = astrometry->parallax;
+    // conf_level 1/2 scale the parallax error ONCE (photometry.sl:858-866);
+    // the stellar MC above already used the same scaled value.
+    ti.parallax_error = astrometry->parallax_error * perr_scale;
+    ti.ruwe = astrometry->ruwe.value_or(
+        std::numeric_limits<double>::quiet_NaN());
+    if (good_astrometry && astrometry->parallax > 0)
+      ti.distance = gaia_distance_mc(ti.parallax, ti.parallax_error,
+                                     confidence, cfg.nMC, cfg.mc_seed);
+    ti.res = &res;
+    ti.par_full = &par_full;
+    ti.ncomp = grids.size();
+    ti.mc = &mc_all;
+    ti.norm_chi_red = res.norm_chi_red;
+    ti.chisqr_red = res.chisqr_red;
+    write_results_tex(base_out + "photometry_results.tex", ti);
+    run_pdflatex(cfg.outdir, cfg.basename + "photometry_results.tex");
+  }
+
+  // ---------------- model spectrum + write_model text products
+  // (photometry.sl:1306-1476). Gated on write_model (plot implies write_model).
+  std::optional<MagFluxResult> mout_opt;  // kept for SED_results.fits
+  dvec spec_l, spec_f;
+  std::vector<dvec> spec_fcomp;
+  if (cfg.write_model || cfg.plot) {
+    auto& params = fun.params();
+    const double res_slope = 1.0 / 6.0;  // FWHM = 6 A (low-res IUE-like)
+    const double xmin = 1100, xmax = 59000;
+    const double logtheta = params[fun.index_of("logtheta")].value;
+    const double E_44m55 = params[fun.index_of("E_44m55")].value;
+    const double R_55 = params[fun.index_of("R_55")].value;
+    const double theta = std::pow(10.0, logtheta);
+
+    // (l,f) = syn_spec(...; res_offset=0, res_slope=1/6, xmin-10..xmax+10)
+    ModelSpectrum ms =
+        build_model_spectrum(fun, xmin - 10, xmax + 10, res_slope);
+
+    // Uncertainty inflation for the figure/tables only (photometry.sl:1344).
+    std::vector<PhotEntry> entries = phot.entries;
+    if (res.norm_chi_red != 0)
+      for (auto& e : entries)
+        e.uncertainty = std::sqrt(e.uncertainty * e.uncertainty +
+                                  res.norm_chi_red * res.norm_chi_red);
+
+    MagFluxResult mout = magnitudes_to_flux(ms.l, ms.f, entries, db, theta,
+                                            E_44m55, R_55, true, true);
+    write_mag_txt(base_out + "photometry_fit_mag.txt", mout.mag);
+    if (!mout.col.empty())
+      write_col_txt(base_out + "photometry_fit_col.txt", mout.col);
+
+    // sout = {l, f*sf [, f_c{i}*sf]}; sf = extinction * (theta/2)^2.
+    dvec sf = extinction_factor(ms.l, E_44m55, R_55);
+    const double s2 = 0.5 * theta * (0.5 * theta);
+    dvec fscaled(ms.l.size());
+    for (size_t i = 0; i < ms.l.size(); ++i) fscaled[i] = ms.f[i] * sf[i] * s2;
+    std::vector<dvec> fcomp;
+    for (const auto& fc : ms.f_comp) {
+      dvec c(fc.size());
+      for (size_t i = 0; i < fc.size(); ++i) c[i] = fc[i] * sf[i] * s2;
+      fcomp.push_back(std::move(c));
+    }
+    write_spectrum_txt(base_out + "photometry_fit.txt", ms.l, fscaled, fcomp);
+    mout_opt = std::move(mout);
+    spec_l = std::move(ms.l);
+    spec_f = std::move(fscaled);
+    spec_fcomp = std::move(fcomp);
+  }
+
+  // ---------------- SED_results.fits (photometry.sl:1585-1664)
+  const std::string fits_path = base_out + "SED_results.fits";
+  if (cfg.write_fits) {
+    FitsOutInput fo;
+    fo.ra = phot.ra.value_or(0.0);
+    fo.dec = phot.dec.value_or(0.0);
+    fo.norm_chi_red = res.norm_chi_red;
+    fo.chisqr_red = res.chisqr_red;
+    fo.nmag_good = nmag_good;
+    fo.grid_short = grid_short(griddirs[0]);
+    {
+      const Astrometry& a = *astrometry;
+      fo.ruwe = a.ruwe;
+      fo.ipd_gof_harmonic_amplitude = a.ipd_gof_harmonic_amplitude;
+      fo.visibility_periods_used = a.visibility_periods_used;
+      if (!std::isnan(a.parallax)) fo.parallax = a.parallax;
+      // the ISIS struct carries the conf_level-scaled error by this point
+      if (!std::isnan(a.parallax_error))
+        fo.parallax_error = a.parallax_error * perr_scale;
+    }
+    fo.have_reddening = phot.reddening.meanSFD || phot.reddening.meanSandF ||
+                        phot.reddening.meanStilism;
+    fo.reddening = phot.reddening;
+    fo.res = &res;
+    fo.stellar = stellar_all;
+    for (const auto& d : griddirs) fo.stellar_grids.push_back(grid_short(d));
+    if (mout_opt) {
+      fo.mout = &*mout_opt;
+      fo.spec_l = &spec_l;
+      fo.spec_f = &spec_f;
+      fo.spec_fcomp = &spec_fcomp;
+    }
+    select_iue_spectrum(phot.entries, cfg.workdir, fo);
+    if (cfg.save_MC)
+      for (const auto& mc : mc_all) fo.mc.push_back(&mc);
+    write_sed_results_fits(fits_path, fo);
+  }
+
+  // ---------------- SED plot via scripts/plot_sed.py (replaces the xfig
+  // rendering, photometry.sl:1380-1525)
+  if (cfg.plot) {
+    std::string script = cfg.plot_script;
+    if (script.empty()) {
+      std::error_code ec;
+      auto exe = std::filesystem::canonical("/proc/self/exe", ec);
+      if (!ec) {
+        auto cand = exe.parent_path().parent_path() / "scripts" / "plot_sed.py";
+        if (std::filesystem::exists(cand)) script = cand.string();
+      }
+    }
+    if (script.empty() || !std::filesystem::exists(script)) {
+      std::fprintf(stderr,
+                   "Warning: plot_sed.py not found (set \"plot_script\" in "
+                   "the config); skipping the SED plot\n");
+    } else {
+      std::string cmd = "python3 '" + script + "' '" + fits_path + "' '" +
+                        base_out + "photometry_SED.pdf'";
+      if (std::system(cmd.c_str()) != 0)
+        std::fprintf(stderr, "Warning: SED plot failed: %s\n", cmd.c_str());
+    }
+  }
 
   auto t1 = std::chrono::steady_clock::now();
   std::fprintf(stderr, "- script completed in %.1fs\n",
