@@ -49,12 +49,24 @@ class PassbandDB {
 
  private:
   void append_colors();
+  // read every extension of filter_passbands.fits.gz in one pass (cfitsio
+  // decompresses the whole archive per open, so one open for all curves)
+  void load_archive() const;
 
   std::string refdata_;
   std::vector<BandEntry> entries_;
   size_t n_mag_ = 0;
   std::vector<std::vector<int>> deps_;
   mutable std::map<std::string, FilterCurve> curves_;
+  mutable std::map<std::string, FilterCurve> archive_;  // EXTNAME -> curve
+  mutable bool archive_loaded_ = false;
+  // magnitude rows feeding compute_colors, resolved once in append_colors
+  struct ColorIdx {
+    int U, B, V, R, I;
+    int sb, sy, sv, su, hn, hw;
+    int GU, GB, GV, GG, GB1, GB2, GV1;
+    int AF148, AF169;
+  } cidx_{};
 };
 
 }  // namespace sed

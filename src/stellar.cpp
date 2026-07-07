@@ -94,15 +94,22 @@ ModeHDI mode_and_HDI(const dvec& din, double p) {
     if (!std::isnan(x)) d.push_back(x);
   const size_t n = d.size();
   if (n < 4) throw std::runtime_error("mode_and_HDI: too few points");
+  // sort once; the median/quantiles and every histogram iteration below all
+  // work on the same sorted data
+  std::sort(d.begin(), d.end());
+  auto sorted_quantile = [&](double p_) {
+    double idx = std::max(0.0, std::min(p_ * (n - 1), double(n - 1)));
+    return d[size_t(idx)];
+  };
 
   ModeHDI r{};
   r.p_s = p;
-  r.median = median(d);
-  r.quantile_lo = quantile(0.5 * (1.0 - p), d);
-  r.quantile_hi = quantile(1.0 - 0.5 * (1.0 - p), d);
+  r.median = d[(n - 1) / 2];
+  r.quantile_lo = sorted_quantile(0.5 * (1.0 - p));
+  r.quantile_hi = sorted_quantile(1.0 - 0.5 * (1.0 - p));
 
-  double dmin = *std::min_element(d.begin(), d.end());
-  double dmax = *std::max_element(d.begin(), d.end());
+  double dmin = d.front();
+  double dmax = d.back();
   if (dmin == dmax) {
     r.mode = d[0];
     r.HDI_lo = r.HDI_hi = std::numeric_limits<double>::quiet_NaN();
@@ -137,17 +144,12 @@ ModeHDI mode_and_HDI(const dvec& din, double p) {
       h.assign(nb, 0.0);
       for (size_t i = 0; i < nb; ++i)
         bin_center[i] = 0.5 * (bounds[i] + bounds[i + 1]);
-      // histogram: lo[i] <= x < hi[i]
-      dvec sorted_d = d;
-      std::sort(sorted_d.begin(), sorted_d.end());
+      // histogram: lo[i] <= x < hi[i] (d is sorted)
       for (size_t i = 0; i < nb; ++i) {
-        auto lo_it = std::lower_bound(sorted_d.begin(), sorted_d.end(),
-                                      bounds[i]);
+        auto lo_it = std::lower_bound(d.begin(), d.end(), bounds[i]);
         auto hi_it = (i + 1 == nb)
-                         ? std::upper_bound(sorted_d.begin(), sorted_d.end(),
-                                            bounds[i + 1])
-                         : std::lower_bound(sorted_d.begin(), sorted_d.end(),
-                                            bounds[i + 1]);
+                         ? std::upper_bound(d.begin(), d.end(), bounds[i + 1])
+                         : std::lower_bound(d.begin(), d.end(), bounds[i + 1]);
         h[i] = double(hi_it - lo_it) / double(n);
       }
       // remove overflow bins

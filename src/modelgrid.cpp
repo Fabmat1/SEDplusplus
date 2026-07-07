@@ -117,9 +117,8 @@ const dvec& ModelGrid::interpolate(double T, double G, double X, double Z,
                 X, G, T);
   auto it = interp_cache_.find(key);
   if (it != interp_cache_.end()) {
-    lru_.erase(it->second.second);
-    lru_.push_back(key);
-    it->second.second = std::prev(lru_.end());
+    // move-to-back without reallocating the list node
+    lru_.splice(lru_.end(), lru_, it->second.second);
     return it->second.first;
   }
   static const char* fmts[5] = {"/Z%.2f", "/HE%.3f", "/X%.2f", "/G%.3f",

@@ -102,28 +102,61 @@ const FilterCurve& PassbandDB::filter(size_t idx) const {
     flabel = replace_all(flabel, "HST18", "HST");
     flabel = replace_all(flabel, "VegaHST", "HST");
     flabel = replace_all(flabel, "VegaINT", "INT");
-    std::string path = refdata_ + "/filter_passbands.fits.gz[" + flabel + "]";
-    fitsfile* fp = nullptr;
-    int status = 0;
-    if (fits_open_file(&fp, path.c_str(), READONLY, &status))
-      throw std::runtime_error("cannot open filter " + path);
+    load_archive();
+    auto ait = archive_.find(flabel);
+    if (ait == archive_.end())
+      throw std::runtime_error("cannot open filter " + refdata_ +
+                               "/filter_passbands.fits.gz[" + flabel + "]");
+    c = ait->second;
+  }
+  return curves_.emplace(label, std::move(c)).first->second;
+}
+
+void PassbandDB::load_archive() const {
+  if (archive_loaded_) return;
+  archive_loaded_ = true;
+  // process-wide cache keyed by refdata path, so --multi decompresses the
+  // archive once per process instead of once per star (single-threaded)
+  static std::map<std::string, std::map<std::string, FilterCurve>> g_archives;
+  auto git = g_archives.find(refdata_);
+  if (git != g_archives.end()) {
+    archive_ = git->second;
+    return;
+  }
+  const std::string path = refdata_ + "/filter_passbands.fits.gz";
+  fitsfile* fp = nullptr;
+  int status = 0;
+  if (fits_open_file(&fp, path.c_str(), READONLY, &status))
+    throw std::runtime_error("cannot open filter archive " + path);
+  int nhdus = 0;
+  fits_get_num_hdus(fp, &nhdus, &status);
+  for (int hdu = 2; hdu <= nhdus && !status; ++hdu) {
+    int hdutype = 0;
+    fits_movabs_hdu(fp, hdu, &hdutype, &status);
+    char extname[FLEN_VALUE] = "";
+    int kstat = 0;
+    fits_read_key(fp, TSTRING, "EXTNAME", extname, nullptr, &kstat);
+    if (kstat || !extname[0]) continue;
+    int lcol = 0, fcol = 0, cstat = 0;
+    fits_get_colnum(fp, CASEINSEN, const_cast<char*>("l"), &lcol, &cstat);
+    fits_get_colnum(fp, CASEINSEN, const_cast<char*>("f"), &fcol, &cstat);
+    if (cstat) continue;  // not a filter-curve table
     long nrows = 0;
     fits_get_num_rows(fp, &nrows, &status);
+    FilterCurve c;
     c.l.resize(nrows);
     c.f.resize(nrows);
-    int lcol = 0, fcol = 0;
-    fits_get_colnum(fp, CASEINSEN, const_cast<char*>("l"), &lcol, &status);
-    fits_get_colnum(fp, CASEINSEN, const_cast<char*>("f"), &fcol, &status);
     double nulval = 0.0;
     int anynul = 0;
     fits_read_col(fp, TDOUBLE, lcol, 1, 1, nrows, &nulval, c.l.data(), &anynul,
                   &status);
     fits_read_col(fp, TDOUBLE, fcol, 1, 1, nrows, &nulval, c.f.data(), &anynul,
                   &status);
-    fits_close_file(fp, &status);
-    if (status) throw std::runtime_error("error reading filter " + path);
+    archive_.emplace(extname, std::move(c));
   }
-  return curves_.emplace(label, std::move(c)).first->second;
+  fits_close_file(fp, &status);
+  if (status) throw std::runtime_error("error reading " + path);
+  g_archives.emplace(refdata_, archive_);
 }
 
 void PassbandDB::append_colors() {
@@ -161,6 +194,8 @@ void PassbandDB::append_colors() {
             GB1 = midx("Geneva", "B1"), GB2 = midx("Geneva", "B2"),
             GV1 = midx("Geneva", "V1");
   const int AF148 = midx("AstroSat", "F148W"), AF169 = midx("AstroSat", "F169M");
+  cidx_ = ColorIdx{U,  B,  V,  R,  I,   sb,  sy,  sv,    su,   hn,
+                   hw, GU, GB, GV, GG,  GB1, GB2, GV1,   AF148, AF169};
 
   // dependency lists (mag_depend), in the same row order as defs[]
   deps_ = {
@@ -241,18 +276,12 @@ void PassbandDB::append_colors() {
 
 void PassbandDB::compute_colors(dvec& mags) const {
   auto m = [&](int i) { return mags[i]; };
-  const int U = find("Johnson", "U"), B = find("Johnson", "B"),
-            V = find("Johnson", "V"), R = find("Johnson", "R"),
-            I = find("Johnson", "I");
-  const int sb = find("Stroemgren", "b"), sy = find("Stroemgren", "y"),
-            sv = find("Stroemgren", "v"), su = find("Stroemgren", "u"),
-            hn = find("Stroemgren", "Hbeta_narrow"),
-            hw = find("Stroemgren", "Hbeta_wide");
-  const int GU = find("Geneva", "U"), GB = find("Geneva", "B"),
-            GV = find("Geneva", "V"), GG = find("Geneva", "G"),
-            GB1 = find("Geneva", "B1"), GB2 = find("Geneva", "B2"),
-            GV1 = find("Geneva", "V1");
-  const int AF148 = find("AstroSat", "F148W"), AF169 = find("AstroSat", "F169M");
+  const int U = cidx_.U, B = cidx_.B, V = cidx_.V, R = cidx_.R, I = cidx_.I;
+  const int sb = cidx_.sb, sy = cidx_.sy, sv = cidx_.sv, su = cidx_.su,
+            hn = cidx_.hn, hw = cidx_.hw;
+  const int GU = cidx_.GU, GB = cidx_.GB, GV = cidx_.GV, GG = cidx_.GG,
+            GB1 = cidx_.GB1, GB2 = cidx_.GB2, GV1 = cidx_.GV1;
+  const int AF148 = cidx_.AF148, AF169 = cidx_.AF169;
   const size_t c0 = n_mag_;
   mags[c0 + 0] = m(U) - m(B);
   mags[c0 + 1] = m(B) - m(V);

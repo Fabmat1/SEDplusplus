@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <memory>
 #include <optional>
 #include <set>
@@ -29,6 +30,7 @@
 #include "fitsout.hpp"
 #include "texout.hpp"
 #include "texval.hpp"
+#include "util.hpp"
 
 using namespace sed;
 
@@ -91,10 +93,25 @@ void build_photometry(double ra, double dec, const std::string& outfile) {
   phot.write(outfile);
 }
 
+// Shared per-process model-grid pool for --multi: node-file caches persist
+// across stars (exact data), the rounded-key interpolation cache is cleared
+// per star so each star behaves exactly as in a single-config run.
+struct GridPool {
+  std::map<std::string, std::shared_ptr<ModelGrid>> grids;
+  std::shared_ptr<ModelGrid> get(const std::string& dir) {
+    auto it = grids.find(dir);
+    if (it == grids.end())
+      it = grids.emplace(dir, std::make_shared<ModelGrid>(dir)).first;
+    it->second->clear_interp_cache();
+    return it->second;
+  }
+};
+
+void run_star(Config cfg, GridPool& pool);
+
 }  // namespace
 
 int main(int argc, char** argv) {
-  auto t0 = std::chrono::steady_clock::now();
   // Standalone query mode: sedfit --query <ra> <dec> <out.dat>
   //                    or:  sedfit --query <name> <out.dat>
   if (argc >= 4 && std::string(argv[1]) == "--query") {
@@ -147,16 +164,52 @@ int main(int argc, char** argv) {
         q->parallax_error);
     return 0;
   }
+  // Batch mode: sedfit --multi <file with one config path per line>.
+  // Grids / filter archives / node FITS files are loaded once per process.
+  if (argc == 3 && std::string(argv[1]) == "--multi") {
+    std::ifstream in(argv[2]);
+    if (!in) {
+      std::fprintf(stderr, "cannot open config list %s\n", argv[2]);
+      return 1;
+    }
+    GridPool pool;
+    std::string line;
+    int n = 0, nfail = 0;
+    while (std::getline(in, line)) {
+      line = trim(line);
+      if (line.empty() || line[0] == '#') continue;
+      ++n;
+      std::fprintf(stderr, "=== [%d] %s\n", n, line.c_str());
+      try {
+        run_star(Config::load(line), pool);
+      } catch (const std::exception& e) {
+        ++nfail;
+        std::fprintf(stderr, "ERROR [%s]: %s\n", line.c_str(), e.what());
+      }
+    }
+    std::fprintf(stderr, "--multi: %d configs processed, %d failed\n", n,
+                 nfail);
+    return nfail == 0 ? 0 : 1;
+  }
   if (argc != 2) {
     std::fprintf(stderr,
                  "usage: sedfit <config.json>\n"
+                 "       sedfit --multi <configlist.txt>\n"
                  "       sedfit --query <ra> <dec> <out.dat>\n"
                  "       sedfit --query <name> <out.dat>\n"
                  "       sedfit --astrometry <ra> <dec>\n"
                  "       sedfit --astrometry <name>\n");
     return 1;
   }
-  Config cfg = Config::load(argv[1]);
+  GridPool pool;
+  run_star(Config::load(argv[1]), pool);
+  return 0;
+}
+
+namespace {
+
+void run_star(Config cfg, GridPool& pool) {
+  auto t0 = std::chrono::steady_clock::now();
   const std::string base_in = cfg.workdir + "/" + cfg.basename;
   const std::string base_out = cfg.outdir + "/" + cfg.basename;
   std::filesystem::create_directories(cfg.outdir);
@@ -306,7 +359,7 @@ int main(int argc, char** argv) {
   // ---------------- grids and fit function
   auto griddirs = search_grid_dirs(cfg.bpaths, cfg.griddirectories, "grid.fits");
   std::vector<std::shared_ptr<ModelGrid>> grids;
-  for (const auto& d : griddirs) grids.push_back(std::make_shared<ModelGrid>(d));
+  for (const auto& d : griddirs) grids.push_back(pool.get(d));
 
   std::vector<std::string> boxes;
   {
@@ -353,7 +406,7 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "[SEDFIT_EVAL] stat=%.10g reduced=%.10g (dof=%d)\n",
                  stat, stat / dof, dof);
     std::fprintf(stderr, "[SEDFIT_EVAL] my best reduced=%.10g\n", res.chisqr_red);
-    return 0;
+    return;
   }
 
   // TeX strings for parameters with confidence limits
@@ -771,5 +824,6 @@ int main(int argc, char** argv) {
   auto t1 = std::chrono::steady_clock::now();
   std::fprintf(stderr, "- script completed in %.1fs\n",
                std::chrono::duration<double>(t1 - t0).count());
-  return 0;
 }
+
+}  // namespace

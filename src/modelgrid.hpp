@@ -33,6 +33,15 @@ class ModelGrid {
   const dvec& interpolate(double T, double G, double X, double Z, double HE,
                           size_t cache_capacity) const;
 
+  // Drop the interpolated-spectrum cache (NOT the node-file cache). Called
+  // between stars in --multi mode: the interpolation cache uses rounded keys
+  // and bounded capacity, so its content is part of the per-star behaviour,
+  // while node fluxes are exact and safe to share.
+  void clear_interp_cache() const {
+    interp_cache_.clear();
+    lru_.clear();
+  }
+
  private:
   const dvec& node_flux(const std::string& relpath) const;
   dvec interpol_recursive(const std::string& str, const char* const* fmts,

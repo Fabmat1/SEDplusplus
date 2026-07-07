@@ -86,10 +86,22 @@ void Fitter::build_dataset() {
 
 void Fitter::select_data(bool verbose) {
   const auto& db = fun_.db();
-  // synthetic magnitudes at the initial parameter values, all filters
-  std::vector<int> all_mag(db.n_magnitudes());
-  for (size_t i = 0; i < all_mag.size(); ++i) all_mag[i] = int(i);
-  fun_.prepare(all_mag);
+  // synthetic magnitudes at the initial parameter values. Only the magnitude
+  // rows behind the observed entries (plus color dependencies) are ever read,
+  // so restrict the preparation to those instead of all filters in the DB.
+  std::vector<int> need;
+  for (const auto& e : phot_.entries) {
+    int j = db.find(e.system, e.passband);
+    if (j < 0) continue;
+    if (db.entries()[j].type == "magnitude")
+      need.push_back(j);
+    else
+      for (int d : db.color_deps()[j - int(db.n_magnitudes())])
+        need.push_back(d);
+  }
+  std::sort(need.begin(), need.end());
+  need.erase(std::unique(need.begin(), need.end()), need.end());
+  fun_.prepare(need);
   std::vector<double> fullpar;
   for (const auto& p : fun_.params()) fullpar.push_back(p.value);
   dvec n_mags;

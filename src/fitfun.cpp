@@ -45,6 +45,10 @@ FitFunction::FitFunction(std::vector<std::shared_ptr<ModelGrid>> grids,
                          const PassbandDB& db, int n_dummy)
     : grids_(std::move(grids)), db_(db) {
   const size_t len = grids_.size();
+  // NOTE: the spectrum cache key is fixed-precision (rounded parameters), so
+  // the capacity is part of the observable behaviour: a larger cache reuses
+  // spectra for parameter values that differ below the key precision where a
+  // smaller one recomputes them. Keep the ISIS value of 6 per component.
   cache_capacity_ = len * 6;
   auto add = [&](const std::string& name, double value, int freeze,
                  double hmin, double hmax, double mn, double mx, double step,
@@ -193,8 +197,8 @@ void FitFunction::mark_fun(const std::string& name) {
   params_[i].freeze = 1;
 }
 
-void FitFunction::model_flux(const std::vector<double>& par,
-                             dvec& f_uni) const {
+const dvec& FitFunction::model_flux(const std::vector<double>& par,
+                                    dvec& scratch) const {
   const size_t len = grids_.size();
   // gather per-component spectra
   if (len == 1) {
@@ -202,8 +206,10 @@ void FitFunction::model_flux(const std::vector<double>& par,
     const dvec& f = grids_[0]->interpolate(par[base + 3], par[base + 4],
                                            par[base + 5], par[base + 6],
                                            par[base + 7], cache_capacity_);
-    f_uni = f;
+    check_bb(par);
+    return f;
   } else {
+    dvec& f_uni = scratch;
     f_uni.assign(l_uni_.size(), 0.0);
     for (size_t i = 0; i < len; ++i) {
       const int base = 3 + int(i) * 9;
@@ -217,9 +223,14 @@ void FitFunction::model_flux(const std::vector<double>& par,
         f_uni[k] += sur * fv;
       }
     }
+    check_bb(par);
+    return f_uni;
   }
+}
+
+void FitFunction::check_bb(const std::vector<double>& par) const {
   // black-body components are not supported in this version
-  const size_t bb_base = 3 + len * 9;
+  const size_t bb_base = 3 + grids_.size() * 9;
   if ((par[bb_base] != 0 && par[bb_base + 1] != 0) ||
       (par[bb_base + 2] != 0 && par[bb_base + 3] != 0))
     throw std::runtime_error("black-body components not implemented yet");
@@ -274,17 +285,24 @@ void FitFunction::prepare(const std::vector<int>& mag_ind) {
   }
   extinction_curve_components(l_uni_, ext_k0_, ext_s_);
   synth_ = std::make_unique<SynthMag>(db_, l_uni_, mag_ind);
+  ext_E_ = ext_R_ = -1.0;  // l_uni changed: invalidate the extinction cache
 }
 
 void FitFunction::evaluate(const std::vector<double>& par, dvec& mags) const {
-  static thread_local dvec f_uni, f_red;
-  model_flux(par, f_uni);
+  static thread_local dvec scratch, f_red;
+  const dvec& f_uni = model_flux(par, scratch);
   const double logtheta = par[0], E = par[1], R = par[2];
-  f_red.resize(f_uni.size());
-  for (size_t k = 0; k < f_uni.size(); ++k) {
-    double kk = ext_k0_[k] + ext_s_[k] * (R - 3.02);
-    f_red[k] = f_uni[k] * std::pow(10.0, (-0.4 * E) * (kk + R));
+  if (!(E == ext_E_ && R == ext_R_)) {
+    ext_fac_.resize(l_uni_.size());
+    for (size_t k = 0; k < l_uni_.size(); ++k) {
+      double kk = ext_k0_[k] + ext_s_[k] * (R - 3.02);
+      ext_fac_[k] = std::pow(10.0, (-0.4 * E) * (kk + R));
+    }
+    ext_E_ = E;
+    ext_R_ = R;
   }
+  f_red.resize(f_uni.size());
+  for (size_t k = 0; k < f_uni.size(); ++k) f_red[k] = f_uni[k] * ext_fac_[k];
   synth_->magnitudes(f_red, mags);
   const double theta_term = 1.505149978319906 - 5.0 * logtheta;
   for (double& m : mags) m += theta_term;  // NaNs stay NaN
