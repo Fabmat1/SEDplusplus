@@ -381,6 +381,7 @@ void run_star(Config cfg, GridPool& pool) {
 
   // ---------------- fit
   Fitter fitter(fun, phot);
+  fitter.set_max_conf_restarts(cfg.max_conf_restarts);
   auto tfit0 = std::chrono::steady_clock::now();
   FitResults res = fitter.run(cfg.par, par_full, cfg.conf_level,
                               cfg.remove_outliers, true);

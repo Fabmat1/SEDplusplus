@@ -139,7 +139,12 @@ MagFluxResult magnitudes_to_flux(const dvec& l, dvec f,
     const bool hbeta = (be.system == "Stroemgren" &&
                         (be.passband == "Hbeta_wide" ||
                          be.passband == "Hbeta_narrow"));
-    nmag[r] = synth_ab_mag(l, f, db.filter(r), hbeta);
+    try {
+      nmag[r] = synth_ab_mag(l, f, db.filter(r), hbeta);
+    } catch (const std::exception&) {
+      // ZP-table row without a filter curve (e.g. a per-catalogue
+      // zero-point override like S82calib): not plottable, keep NaN
+    }
   }
   db.compute_colors(nmag);     // fills the 21 colour rows
   for (size_t i = 0; i < nmag.size(); ++i) nmag[i] += entries[i].ZP;

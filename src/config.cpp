@@ -54,6 +54,7 @@ Config Config::load(const std::string& json_path) {
   c.bpaths = j.value("bpaths", std::vector<std::string>{"./"});
 
   c.conf_level = j.value("conf_level", 0);
+  c.max_conf_restarts = j.value("max_conf_restarts", 1000);
   // Phase-3 toggles: default OFF (bulk fitting stays lean). Only write_model
   // (and plot, which implies it) has behaviour in Stage 1; the rest are
   // parse-only until later stages.

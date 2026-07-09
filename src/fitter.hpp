@@ -59,6 +59,9 @@ class Fitter {
 
   double norm_chi_red() const { return norm_chi_red_; }
 
+  // Cap on conf-loop restart-on-improvement cycles (and renormalize repeats).
+  void set_max_conf_restarts(int n) { max_conf_restarts_ = n; }
+
  private:
   void build_dataset();  // data/err arrays from phot + ZP_err (+norm)
   void select_data(bool verbose);
@@ -78,6 +81,7 @@ class Fitter {
   std::vector<int> mag_ind_;  // magnitude rows needed
   dvec data_, err_;           // observed magnitudes and total uncertainties
   double norm_chi_red_ = 0.0;
+  int max_conf_restarts_ = 1000;
 };
 
 }  // namespace sed

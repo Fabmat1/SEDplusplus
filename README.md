@@ -17,6 +17,19 @@ Implemented in three validated phases:
   `photometry_results.tex` (+ PDF via pdflatex), `SED_results.fits`, and the
   SED plot (`scripts/plot_sed.py`), all behind config toggles that default to
   off so bulk fitting stays lean.
+- **Bulk local fitting** (`scripts/bulk_fit.py` + `scripts/sed_local.py`,
+  campaign example `configs/bulk_campaign.json`): fully offline fitting of
+  the local per-HEALPix SED parquet tables. Per pixel it joins the local
+  Gaia store (corrected parallaxes, GSP-Phot priors) and the Wang et al.
+  2025 3D dust map, classifies band columns via the photometry pipeline's
+  `catalogs_use.txt`, and fits with an optional MS-first strategy: the
+  main-sequence candidate runs first (Teff from GSP-Phot, ZAMS logg init);
+  stars with a good, mass-radius-plausible MS fit skip the remaining
+  candidates. `sedfit` reads `refdata/zeropoint_offsets.txt` when present
+  (else its builtin table), accepts `filter_passbands.fits[.gz]` with
+  either DES or DECam extension names, and caps pathological
+  confidence-loop restarts via the `max_conf_restarts` config key (default
+  1000 = ISIS-equivalent; bulk uses 10).
 
 ## Status
 

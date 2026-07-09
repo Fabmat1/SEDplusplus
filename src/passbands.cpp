@@ -2,8 +2,11 @@
 
 #include <fitsio.h>
 
+#include <sys/stat.h>
+
 #include <cmath>
 #include <cstdio>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 
@@ -24,17 +27,43 @@ std::string replace_all(std::string s, const std::string& a,
   return s;
 }
 
+bool file_exists(const std::string& p) {
+  struct stat st;
+  return stat(p.c_str(), &st) == 0;
+}
+
 }  // namespace
 
 PassbandDB::PassbandDB(const std::string& refdata_dir, bool apply_ZPO_corr,
                        const std::vector<std::string>& boxes)
     : refdata_(refdata_dir) {
-  for (const char* row : ZP_TABLE) {
+  // zero-point table: refdata/zeropoint_offsets.txt when present (same row
+  // format as the builtin table; '#' comments and the "system passband ..."
+  // header line skipped), otherwise the builtin zp_table.inc
+  std::vector<std::string> rows;
+  const std::string zpo_file = refdata_ + "/zeropoint_offsets.txt";
+  if (file_exists(zpo_file)) {
+    std::ifstream in(zpo_file);
+    std::string line;
+    while (std::getline(in, line)) {
+      size_t hash = line.find('#');
+      if (hash != std::string::npos) line.erase(hash);
+      size_t first = line.find_first_not_of(" \t\r");
+      if (first == std::string::npos) continue;
+      if (line.compare(first, 6, "system") == 0) continue;  // header line
+      rows.push_back(line);
+    }
+    if (rows.empty())
+      throw std::runtime_error("no zero-point rows in " + zpo_file);
+  } else {
+    for (const char* row : ZP_TABLE) rows.push_back(row);
+  }
+  for (const std::string& row : rows) {
     BandEntry e;
     char sys[64], pb[64], type[32];
     double zp, zperr, corr, correrr;
-    if (7 != std::sscanf(row, "%63s %63s %lf %lf %lf %lf %31s", sys, pb, &zp,
-                         &zperr, &corr, &correrr, type))
+    if (7 != std::sscanf(row.c_str(), "%63s %63s %lf %lf %lf %lf %31s", sys,
+                         pb, &zp, &zperr, &corr, &correrr, type))
       throw std::runtime_error(std::string("bad ZP table row: ") + row);
     e.system = sys;
     e.passband = pb;
@@ -104,9 +133,15 @@ const FilterCurve& PassbandDB::filter(size_t idx) const {
     flabel = replace_all(flabel, "VegaINT", "INT");
     load_archive();
     auto ait = archive_.find(flabel);
+    // DECam vs DES: newer archives name the filter-system extensions DECam_*,
+    // older ones DES_*; accept either spelling for either system name
+    if (ait == archive_.end() && flabel.compare(0, 4, "DES_") == 0)
+      ait = archive_.find("DECam" + flabel.substr(3));
+    if (ait == archive_.end() && flabel.compare(0, 6, "DECam_") == 0)
+      ait = archive_.find("DES" + flabel.substr(5));
     if (ait == archive_.end())
       throw std::runtime_error("cannot open filter " + refdata_ +
-                               "/filter_passbands.fits.gz[" + flabel + "]");
+                               "/filter_passbands.fits[.gz][" + flabel + "]");
     c = ait->second;
   }
   return curves_.emplace(label, std::move(c)).first->second;
@@ -123,7 +158,11 @@ void PassbandDB::load_archive() const {
     archive_ = git->second;
     return;
   }
-  const std::string path = refdata_ + "/filter_passbands.fits.gz";
+  std::string path = refdata_ + "/filter_passbands.fits.gz";
+  if (!file_exists(path)) {
+    const std::string plain = refdata_ + "/filter_passbands.fits";
+    if (file_exists(plain)) path = plain;
+  }
   fitsfile* fp = nullptr;
   int status = 0;
   if (fits_open_file(&fp, path.c_str(), READONLY, &status))

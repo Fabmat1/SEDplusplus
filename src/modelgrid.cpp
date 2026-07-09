@@ -21,7 +21,8 @@ std::vector<std::string> search_grid_dirs(
     std::vector<std::string> griddirectories, const std::string& sfile) {
   for (auto& dir : griddirectories) {
     if (dir.empty() || dir.back() != '/') dir += "/";
-    for (const auto& bp : bpaths) {
+    for (auto bp : bpaths) {
+      if (!bp.empty() && bp.back() != '/') bp += "/";
       if (file_exists(bp + dir + sfile)) {
         dir = bp + dir;
         break;

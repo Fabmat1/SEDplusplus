@@ -23,6 +23,10 @@ struct Config {
   std::vector<std::string> bpaths;
 
   int conf_level = 0;
+  // Cap on the conf-loop restart-on-improvement cycles (ISIS restarts
+  // unbounded; 1000 reproduces the old behaviour). Low values (10-30) keep
+  // degenerate fits from grinding for hours in bulk mode.
+  int max_conf_restarts = 1000;
   // Phase-3 output-product toggles (all OFF by default; ISIS defaults differ).
   bool write_model = false;  // photometry_fit*.txt + model FITS extensions
   bool write_fits = false;   // SED_results.fits

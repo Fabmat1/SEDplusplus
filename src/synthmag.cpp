@@ -56,7 +56,13 @@ SynthMag::SynthMag(const PassbandDB& db, const dvec& l,
                    const std::vector<int>& mag_indices)
     : db_(db), n_entries_(db.entries().size()) {
   for (int row : mag_indices) {
-    const FilterCurve& fc = db_.filter(row);
+    const FilterCurve* fcp;
+    try {
+      fcp = &db_.filter(row);
+    } catch (const std::exception&) {
+      continue;  // no filter curve for this ZP row -> synthetic mag stays NaN
+    }
+    const FilterCurve& fc = *fcp;
     if (!(fc.l.front() >= l.front() && fc.l.back() <= l.back())) continue;
 
     // ind = where(l_filter[0] <= l <= l_filter[-1]), then prepend one point

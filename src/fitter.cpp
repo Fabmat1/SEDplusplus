@@ -458,7 +458,14 @@ FitResults Fitter::run(const ParSet& par, const ParSet& par_full,
       int guard = 0;
       while (restart) {
         restart = false;
-        if (++guard > 1000) break;
+        // past the restart cap: stop adopting improvements (a degenerate
+        // surface can keep "improving" by micro-amounts forever) and finish
+        // one plain pass so every free parameter gets its limits recorded
+        const bool allow_restart = ++guard <= max_conf_restarts_;
+        if (!allow_restart && verbose && guard == max_conf_restarts_ + 1)
+          warn("conf loop still improving after " +
+               std::to_string(max_conf_restarts_) +
+               " restarts -- finishing without further restarts");
         for (size_t j = 0; j < free_idx.size(); ++j) {
           std::vector<double> save;
           for (const auto& p : params) save.push_back(p.value);
@@ -467,7 +474,7 @@ FitResults Fitter::run(const ParSet& par, const ParSet& par_full,
           conf(free_idx[j], delta, tol, lo, hi);
           double stat_after = statistic_at_current();
           bool not_bracketed = (pbest_val < lo || hi < pbest_val);
-          if (stat_after < best_stat - 1e-9) {
+          if (allow_restart && stat_after < best_stat - 1e-9) {
             // adopt the improved fit and settle it, then restart the loop
             fit_once();
             best_stat = statistic_at_current();
@@ -486,8 +493,15 @@ FitResults Fitter::run(const ParSet& par, const ParSet& par_full,
     if (norm_chi_red_ != 0.0) {
       double chisqr_red_old = statistic_at_current() / double(len - nfree);
       bool repeat;
+      int renorm_guard = 0;
       do {
         repeat = false;
+        if (++renorm_guard > max_conf_restarts_) {
+          if (verbose)
+            warn("conf/renormalize cycle did not settle after " +
+                 std::to_string(max_conf_restarts_) + " repeats");
+          break;
+        }
         conf_all();
         double cr = statistic_at_current() / double(len - nfree);
         if (cr < 0.99 * chisqr_red_old) {
