@@ -11,9 +11,11 @@ fit engine is used unchanged and the remote-query mode keeps working.
 
 Per star it writes into a workdir:
   photometry.dat          photometric_table.sl format; one row per band with
-                          finite _mag; parquet _flag kept (sedfit fits only
-                          flag == 0), blends (survey nWithin > 1) demoted to
-                          flag -9 unless --keep-blends.
+                          finite _mag; parquet _flag kept as-is (a bitmask,
+                          0 = pristine: 1 survey_bad, 2 superseded,
+                          4 internal_bad, 8 sed_outlier; sedfit fits only
+                          flag == 0); blends (survey nWithin > 1) get
+                          bit 4 (internal_bad) unless --keep-blends.
   photometry_results.txt  "# key = value;" astrometry header (RA/DEC,
                           parallax [zero-point-corrected where available],
                           ruwe) -- omitted in the BJ-distance modes, where
@@ -22,19 +24,21 @@ Per star it writes into a workdir:
                           distances, band counts).
 
 Reddening (the E(44-55) first guess sedfit takes from the photometry.dat
-header): '3d' = local Wang et al. 2025 3D dust map (dustmaps3d; E(44-55) at
-the star's distance as meanStilism, line-of-sight total as meanSandF --
-sedfit picks the LOS value itself for stars without significant parallax),
-'sfd' = local 2D SFD map via `dustmaps` (meanSandF = 0.86 * SFD), a fixed
-value, or none.
+header): 'table' = the photometry pipeline's precomputed 3D-dust reddening
+(reddening_enrich.py shards keyed by u_obj_id, e.g. photometry/
+reddening_qmost/, or the same E4455_bj/E4455_los columns merged into the SED
+table itself as in sed_qmost; E(44-55) at the star's distance as meanStilism,
+line-of-sight total as meanSandF -- sedfit picks the LOS value itself for
+stars without significant parallax), 'sfd' = local 2D SFD map
+via `dustmaps` (meanSandF = 0.86 * SFD), a fixed value, or none.
 
 Fully offline extras (see the bulk driver / CLI options): load_catalogs()
 reads the photometry pipeline's catalogs_use.txt so band columns are
 classified by (catname, system, band) instead of the builtin map;
 attach_gaia() joins a pixel with the local Gaia store for corrected
 parallaxes (parallax_corr; callers fall back to the uncorrected value where
-NaN) and the GSP-Phot priors; attach_reddening_3d() batch-queries the local
-3D dust map.
+NaN) and the GSP-Phot priors; attach_reddening_table() joins the precomputed
+reddening shards.
 
 CLI (one star / one pixel; the bulk driver imports the functions instead):
   python scripts/sed_local.py --sed <sed_dir> --id <u_obj_id> --workdir W
@@ -187,16 +191,16 @@ def sfd_ebv(ra, dec):
 
 def reddening_header(row, source):
     """The reddening header lines for photometry.dat, or ''.
-    source: 'sfd' | 'none' | '3d' | a float (E(B-V), SFD scale).
+    source: 'sfd' | 'none' | 'table' | a float (E(B-V), SFD scale).
 
-    '3d' uses the Wang et al. 2025 3D dust map values previously attached to
-    the row by attach_reddening_3d (one batched map query per pixel). sedfit
-    turns meanStilism into the E(44-55) initial guess via E = E3d/0.91 (and
-    falls back to meanSandF for stars beyond parallax significance), so the
-    map's E(44-55) is written back on the 0.91 scale."""
+    'table' uses the fields attached from the precomputed reddening shards
+    (or the SED table's own merged columns) by attach_reddening_table.
+    sedfit turns meanStilism into the E(44-55) initial guess via
+    E = E3d/0.91 (and falls back to meanSandF for stars beyond parallax
+    significance), so E(44-55) is written on the 0.91 scale here."""
     if source == "none":
         return ""
-    if source == "3d":
+    if source == "table":
         e_star = row.get("E4455_3d")
         e_los = row.get("E4455_los_3d")
         lines = ""
@@ -215,52 +219,63 @@ def reddening_header(row, source):
             f"# meanSandF = {0.86 * ebv:.4f} stdSandF = 0.0000\n")
 
 
-def attach_reddening_3d(rows, extinction_maps_dir):
-    """Attach Wang et al. 2025 3D-dust reddening to each row (dict) in
-    `rows`, in ONE batched map query: E4455_3d = E(44-55) at the star's
-    distance (clamped to the sightline's max reliable distance) and
-    E4455_los_3d = the total line of sight. Distance: BJ2021_r_pgeo where
-    available, else 1/parallax_corr (fallback 1/parallax); stars without any
-    distance get the line-of-sight value in both fields.
-    E(B-V)_Wang -> E(44-55) via the F19 alpha=0.990 (reddening_laws.py)."""
-    import os
-    if not rows:
+def attach_reddening_table(rows, tables_dir, pixel=None):
+    """Attach precomputed 3D-dust reddening (reddening_enrich.py shards, e.g.
+    photometry/reddening_qmost/: one hpx_NNNNNNN.parquet per Norder=4 pixel,
+    keyed by u_obj_id, E(44-55) values -- no scale conversion needed) to each
+    row: E4455_3d = E4455_bj (at the star's distance) and E4455_los_3d =
+    E4455_los (total sightline). Rows that already carry E4455_bj/E4455_los
+    (SED tables enriched via reddening_enrich.py --to-sed, e.g. sed_qmost)
+    are used directly without touching `tables_dir`.
+
+    `pixel` is the shared HEALPix pixel of all rows; None means each row
+    carries its own in row['_pixel'] (by-id selection). Stars absent from
+    the shard (or in-row columns) keep NaN -> no reddening header lines
+    (sedfit then treats the reddening as unconstrained)."""
+    def _num(v):
+        return float(v) if v is not None else float("nan")
+
+    need = []                                # (row, pixel) still to join
+    for r in rows:
+        if "E4455_bj" in r or "E4455_los" in r:   # merged sed table
+            r["E4455_3d"] = _num(r.get("E4455_bj"))
+            r["E4455_los_3d"] = _num(r.get("E4455_los"))
+        else:
+            r["E4455_3d"] = r["E4455_los_3d"] = float("nan")
+            need.append((r, pixel if pixel is not None else r.get("_pixel")))
+    if not need:
         return
-    # must win over any inherited XDG_DATA_HOME, and must be set before the
-    # first dustmaps3d import (its data path is resolved at import time)
-    os.environ["XDG_DATA_HOME"] = str(extinction_maps_dir)
-    from dustmaps3d import dustmaps3d
-    from astropy.coordinates import SkyCoord
-    import astropy.units as u
-
-    ra = np.array([r["ra"] for r in rows], dtype=float)
-    dec = np.array([r["dec"] for r in rows], dtype=float)
-    g = SkyCoord(ra * u.deg, dec * u.deg, frame="icrs").galactic
-    l, b = np.asarray(g.l.deg), np.asarray(g.b.deg)
-
-    def _get(key):
-        return np.array([float(r.get(key) or "nan") for r in rows])
-
-    d_kpc = _get("BJ2021_r_pgeo") / 1000.0        # pc -> kpc
-    plx = _get("parallax_corr")
-    plx = np.where(np.isfinite(plx), plx, _get("parallax"))
-    with np.errstate(divide="ignore", invalid="ignore"):
-        d_plx = np.where(plx > 0, 1.0 / plx, np.nan)
-    d_kpc = np.where(np.isfinite(d_kpc) & (d_kpc > 0), d_kpc, d_plx)
-
-    _, _, _, maxd = dustmaps3d(l, b, np.zeros_like(l))
-    maxd = np.asarray(maxd, dtype=float)
-    ebv_los, *_ = dustmaps3d(l, b, maxd)
-    ebv_los = np.asarray(ebv_los, dtype=float)
-    d_query = np.minimum(np.nan_to_num(d_kpc, nan=0.0), maxd)
-    ebv_star, *_ = dustmaps3d(l, b, d_query)
-    ebv_star = np.where(np.isfinite(d_kpc) & (d_kpc > 0),
-                        np.asarray(ebv_star, dtype=float), ebv_los)
-
-    F19_ALPHA = 0.990  # E(B-V) = alpha * E(44-55) (reddening_laws.py)
-    for i, r in enumerate(rows):
-        r["E4455_3d"] = float(ebv_star[i]) / F19_ALPHA
-        r["E4455_los_3d"] = float(ebv_los[i]) / F19_ALPHA
+    if not tables_dir:
+        sys.exit("sed_local: reddening 'table' needs the reddening-tables "
+                 "dir (the SED rows carry no E4455_bj/E4455_los columns)")
+    by_pix = {}
+    for r, pix in need:
+        by_pix.setdefault(pix, []).append(r)
+    n_miss = 0
+    for pix, prows in by_pix.items():
+        shard = Path(tables_dir) / f"hpx_{pix:07d}.parquet"
+        lut = {}
+        if shard.exists():
+            t = pq.read_table(shard,
+                              columns=["u_obj_id", "E4455_bj", "E4455_los"])
+            lut = {u: (bj, los) for u, bj, los in
+                   zip(t.column("u_obj_id").to_pylist(),
+                       t.column("E4455_bj").to_pylist(),
+                       t.column("E4455_los").to_pylist())}
+        else:
+            print(f"sed_local: reddening shard missing: {shard}",
+                  file=sys.stderr)
+        for r in prows:
+            hit = lut.get(int(r["u_obj_id"]))
+            if hit is None:
+                n_miss += 1
+                continue
+            r["E4455_3d"] = _num(hit[0])
+            r["E4455_los_3d"] = _num(hit[1])
+    if n_miss:
+        print(f"sed_local: {n_miss}/{len(rows)} stars not in the reddening "
+              f"tables ({tables_dir}) -- no reddening prior for those",
+              file=sys.stderr)
 
 
 # ---------------------------------------------------------------------------
@@ -331,10 +346,12 @@ def photometry_dat_text(row, redd_lines, keep_blends=False):
             continue
         survey, system, passband, catalog = info
         err = _f(row, col[:-4] + "_err")
+        # flag is a bitmask (0 = pristine): 1 survey_bad, 2 superseded,
+        # 4 internal_bad, 8 sed_outlier (reserved for the post-SED pass)
         flag = int(row.get(col[:-4] + "_flag") or 0)
         nwithin = _f(row, survey + "_nWithin", 1.0)
-        if flag == 0 and not keep_blends and nwithin > 1:
-            flag = -9  # blended: identification not unique
+        if not keep_blends and nwithin > 1:
+            flag |= 4  # blended: identification not unique -> internal_bad
         angdist = _f(row, survey + "_angDist", 0.0)
         if not math.isfinite(angdist):
             angdist = 0.0
@@ -373,13 +390,15 @@ def bj_distance(row, kind):
 
 
 def prepare_star(row, workdir, distance="parallax", reddening="sfd",
-                 keep_blends=False):
+                 keep_blends=False, min_points=5):
     """Write photometry.dat (+ astrometry header) + star_meta.json for one
     SED-table row into `workdir`. Returns the meta dict (None if the star has
-    no usable band)."""
+    fewer than `min_points` usable photometry points -- too few to constrain
+    the SED, and outlier removal can push the fit below the number of free
+    parameters)."""
     redd = reddening_header(row, reddening)
     text, n_good = photometry_dat_text(row, redd, keep_blends)
-    if n_good == 0:
+    if n_good < min_points:
         return None
     workdir = Path(workdir)
     workdir.mkdir(parents=True, exist_ok=True)
@@ -428,6 +447,12 @@ def pixel_rows(sed_dir, pixel):
     return pq.read_table(f).to_pylist()
 
 
+def pixel_nrows(sed_dir, pixel):
+    """Row count of one pixel file (parquet metadata only; cheap)."""
+    f = Path(sed_dir) / f"hpx_{pixel:07d}.parquet"
+    return pq.ParquetFile(f).metadata.num_rows
+
+
 def pixel_of_id(sed_dir, uid):
     """HEALPix pixel of one u_obj_id via the _index.parquet sidecar."""
     hit = pq.read_table(Path(sed_dir) / "_index.parquet",
@@ -467,8 +492,9 @@ def main():
     ap.add_argument("--distance", default="parallax",
                     choices=["parallax", "bj_geo", "bj_pgeo", "none"])
     ap.add_argument("--reddening", default="sfd",
-                    help="'sfd' (local dustmaps SFD), '3d' (local Wang+2025 "
-                         "3D map; needs --extinction-maps), 'none', or a "
+                    help="'sfd' (local dustmaps SFD), 'table' "
+                         "(precomputed reddening shards / merged E4455_bj "
+                         "columns; see --reddening-tables), 'none', or a "
                          "fixed E(B-V) value on the SFD scale")
     ap.add_argument("--keep-blends", action="store_true",
                     help="keep flag 0 on bands whose survey has nWithin > 1")
@@ -477,14 +503,14 @@ def main():
     ap.add_argument("--gaia-store", help="local Gaia store "
                     "(big_surveys/store/gaia_edr3): corrected parallaxes + "
                     "GSP-Phot priors")
-    ap.add_argument("--extinction-maps", help="3D dust map data dir "
-                    "(extinction_maps/, for --reddening 3d)")
+    ap.add_argument("--reddening-tables", help="precomputed reddening shard "
+                    "dir (reddening_enrich.py output, e.g. photometry/"
+                    "reddening_qmost/, for --reddening table; not needed "
+                    "when the SED table already carries E4455_bj/E4455_los)")
     a = ap.parse_args()
 
     if a.catalogs:
         load_catalogs(a.catalogs)
-    if a.reddening == "3d" and not a.extinction_maps:
-        ap.error("--reddening 3d needs --extinction-maps")
 
     if a.id is not None:
         if not a.workdir:
@@ -494,8 +520,8 @@ def main():
             sys.exit(f"u_obj_id {a.id} not found in {a.sed}")
         if a.gaia_store:
             attach_gaia([row], a.gaia_store, row["_pixel"])
-        if a.reddening == "3d":
-            attach_reddening_3d([row], a.extinction_maps)
+        if a.reddening == "table":
+            attach_reddening_table([row], a.reddening_tables)
         meta = prepare_star(row, a.workdir, a.distance, a.reddening,
                             a.keep_blends)
         if meta is None:
@@ -507,8 +533,8 @@ def main():
         rows = pixel_rows(a.sed, a.pixel)
         if a.gaia_store:
             attach_gaia(rows, a.gaia_store, a.pixel)
-        if a.reddening == "3d":
-            attach_reddening_3d(rows, a.extinction_maps)
+        if a.reddening == "table":
+            attach_reddening_table(rows, a.reddening_tables, a.pixel)
         n = n_skip = 0
         for row in rows:
             uid = int(row["u_obj_id"])

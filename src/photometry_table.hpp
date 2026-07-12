@@ -12,6 +12,18 @@
 namespace sed {
 
 struct PhotEntry {
+  // Bitmask, 0 = pristine (only flag==0 rows are fitted). Bits are
+  // independent and can be combined:
+  //   1  survey_bad    failed the survey's own quality flags / SNR / saturation
+  //   2  superseded    a better measurement of this band exists (redundant,
+  //                    would double-count in an SED)
+  //   4  internal_bad  flagged unreliable by our own testing/curation
+  //                    (e.g. all APASS, blended identifications)
+  //   8  sed_outlier   inconsistent with the object's other bands (set by the
+  //                    post-SED outlier pass, see Fitter remove_outliers)
+  // Note: the legacy VizieR remote-query path (query.cpp/spectra.cpp) still
+  // uses the historic S-Lang flag values (-1, -3, ..., 2) for parity with the
+  // original tool; the bulk pipeline never mixes with that path.
   int flag = 0;
   std::string system;
   std::string passband;

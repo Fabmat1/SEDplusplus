@@ -157,6 +157,13 @@ ModeHDI mode_and_HDI(const dvec& din, double p) {
       bin_center.pop_back();
       h.erase(h.begin());
       h.pop_back();
+      // pathological samples (range spanning many decades around a huge
+      // mode estimate) can collapse the refined bounds to a single bin via
+      // floating-point cancellation, leaving no interior bins at all
+      if (h.size() < 2) {
+        r.mode = r.HDI_lo = r.HDI_hi = std::numeric_limits<double>::quiet_NaN();
+        return r;
+      }
     } else {
       // final iteration: smooth and refine
       double stepsize = bin_center[1] - bin_center[0];

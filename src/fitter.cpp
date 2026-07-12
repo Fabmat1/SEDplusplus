@@ -172,6 +172,8 @@ double Fitter::fit_once() {
   MpfitCtx ctx{this, &fun_, &free_idx, &fullpar, &data_, &err_, &ind_n_, {}};
   mp_config cfg = isis_mpfit_config();
   mp_result result{};
+  xerror_.assign(nfree, 0.0);
+  result.xerror = xerror_.data();
   mpfit(mpfit_objective, int(data_.size()), nfree, p.data(), mppar.data(),
         &cfg, &ctx, &result);
   for (int j = 0; j < nfree; ++j) params[free_idx[j]].value = p[j];
@@ -361,9 +363,9 @@ FitResults Fitter::run(const ParSet& par, const ParSet& par_full,
           if (verbose)
             std::fprintf(stderr,
                          "Information: the data point %s: %s was identified "
-                         "as outlier (flag=-2).\n",
+                         "as outlier (flag bit 8, sed_outlier).\n",
                          e.system.c_str(), e.passband.c_str());
-          phot_.entries[ind_m_[worst]].flag = -2;
+          phot_.entries[ind_m_[worst]].flag |= 8;
           select_data(false);  // rebuild ind_m/ind_n/mag_ind without it
           len = int(ind_m_.size());
         }
@@ -440,10 +442,27 @@ FitResults Fitter::run(const ParSet& par, const ParSet& par_full,
   dvec pmax(free_idx.size(), std::numeric_limits<double>::quiet_NaN());
   bool have_conf = false;
   static const double DELTA_CHISQR[3] = {1.00, 2.71, 6.63};
-  if (conf_level != -1 && len > nfree) {
+  if (covar_errors_ && conf_level != -1 && len > nfree) {
+    // Fast error path: 1-sigma errors from the mpfit covariance matrix at the
+    // minimum, scaled to the requested delta-chi^2 (sqrt(1.00/2.71/6.63) =
+    // 68.3/90/99% single-parameter levels). err_ already carries the
+    // norm_chi_red excess noise, so chi2_red <= 1 and the covariance is
+    // calibrated. One extra fit_once() from the converged solution refreshes
+    // xerror_ cheaply. Parameters pegged at a limit get zero-width intervals.
+    have_conf = true;
+    fit_once();
+    const double scale = std::sqrt(DELTA_CHISQR[conf_level]);
+    for (size_t j = 0; j < free_idx.size(); ++j) {
+      const Param& p = params[free_idx[j]];
+      double sig = j < xerror_.size() ? xerror_[j] : 0.0;
+      if (!std::isfinite(sig) || sig < 0.0) sig = 0.0;
+      pmin[j] = std::max(p.min, p.value - scale * sig);
+      pmax[j] = std::min(p.max, p.value + scale * sig);
+    }
+  } else if (conf_level != -1 && len > nfree) {
     have_conf = true;
     const double delta = DELTA_CHISQR[conf_level];
-    const double tol = 1e-3;
+    const double tol = conf_tol_;
     // Confidence-limit driver, mirroring conf_loop.sl: when a parameter's
     // single-parameter search re-fits the others and finds a lower statistic
     // (or fails to bracket the best value), the improved fit is adopted and the

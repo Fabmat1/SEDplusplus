@@ -55,6 +55,12 @@ Config Config::load(const std::string& json_path) {
 
   c.conf_level = j.value("conf_level", 0);
   c.max_conf_restarts = j.value("max_conf_restarts", 1000);
+  c.conf_tol = j.value("conf_tol", 1e-3);
+  c.fast_ext = j.value("fast_ext", 0) != 0;
+  c.error_mode = j.value("error_mode", std::string("conf"));
+  if (c.error_mode != "conf" && c.error_mode != "covar")
+    throw std::runtime_error("error_mode must be \"conf\" or \"covar\"");
+  c.use_mag_grid = j.value("use_mag_grid", 0) != 0;
   // Phase-3 toggles: default OFF (bulk fitting stays lean). Only write_model
   // (and plot, which implies it) has behaviour in Stage 1; the rest are
   // parse-only until later stages.

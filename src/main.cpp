@@ -20,6 +20,7 @@
 #include "fitfun.hpp"
 #include "fitter.hpp"
 #include "magflux.hpp"
+#include "maggrid.hpp"
 #include "modelgrid.hpp"
 #include "photometry_table.hpp"
 #include "query.hpp"
@@ -164,6 +165,10 @@ int main(int argc, char** argv) {
         q->parallax_error);
     return 0;
   }
+  // Preprocessing mode: sedfit --premag <griddir> <refdata> [--force]
+  // [box ...] -- build/refresh the precomputed mag grid (<griddir>/mag/).
+  if (argc >= 3 && std::string(argv[1]) == "--premag")
+    return premag_main(argc, argv);
   // Batch mode: sedfit --multi <file with one config path per line>.
   // Grids / filter archives / node FITS files are loaded once per process.
   if (argc == 3 && std::string(argv[1]) == "--multi") {
@@ -372,6 +377,9 @@ void run_star(Config cfg, GridPool& pool) {
 
   int ndummy = good_astrometry ? 4 : 0;
   FitFunction fun(grids, db, ndummy);
+  fun.set_fast_ext(cfg.fast_ext);
+  if (cfg.use_mag_grid)
+    fun.set_use_mag_grid(true, mag_filters_hash(cfg.refdata));
   if (good_astrometry) {
     fun.set_par("dummy_1", astrometry->parallax, -1, 0.0, 200.0);
     fun.mark_fun("dummy_2");
@@ -382,12 +390,20 @@ void run_star(Config cfg, GridPool& pool) {
   // ---------------- fit
   Fitter fitter(fun, phot);
   fitter.set_max_conf_restarts(cfg.max_conf_restarts);
+  fitter.set_conf_tol(cfg.conf_tol);
+  fitter.set_covar_errors(cfg.error_mode == "covar");
   auto tfit0 = std::chrono::steady_clock::now();
   FitResults res = fitter.run(cfg.par, par_full, cfg.conf_level,
                               cfg.remove_outliers, true);
   auto tfit1 = std::chrono::steady_clock::now();
   std::fprintf(stderr, "- fit done in %.1fs\n",
                std::chrono::duration<double>(tfit1 - tfit0).count());
+  if (std::getenv("SEDFIT_STATS"))
+    std::fprintf(stderr,
+                 "- stats: %ld evals (%ld memo hits, %ld ext recomputes), "
+                 "subset %zu points\n",
+                 fun.n_eval_, fun.n_memo_hit_, fun.n_ext_recompute_,
+                 fun.subset_size());
 
   // debug: evaluate reduced chi^2 at externally supplied parameter values
   // (SEDFIT_EVAL=<file> of "name value" lines) using the final dataset, to
@@ -659,7 +675,47 @@ void run_star(Config cfg, GridPool& pool) {
       in.seed = cfg.mc_seed + comp;
       in.retain_arrays = cfg.save_MC;  // stage 3: MC_c* FITS extensions
 
-      StellarMCResult mc = stellar_mc(in);
+      StellarMCResult mc;
+      if (cfg.nMC > 0) {
+        mc = stellar_mc(in);
+      } else {
+        // nMC = 0: first-order asymmetric error propagation instead of the
+        // MC (bulk fast path). Same central values as the derived dummies;
+        // the deltas combine in quadrature in ln-space, correlations between
+        // fit parameters are ignored (the MC ignores them too -- it samples
+        // each delta independently). vgrav/vesc stay invalid (not written).
+        const double plx = in.parallax, splx = in.parallax_error;
+        mc.valid = std::isfinite(in.logtheta) && plx > 0 &&
+                   std::isfinite(splx) && in.sur_ratio > 0;
+        if (mc.valid) {
+          const double R = std::pow(10.0, in.logtheta) / (2e-3 * plx) *
+                           4.4353565926280975e7 * std::sqrt(in.sur_ratio);
+          const double L = R * R * std::pow(in.teff / 5772.0, 4);
+          const double M =
+              std::pow(10.0, in.logg) * R * R * 3.6469715273112305e-5;
+          auto q = [](double a, double b, double c) {
+            return std::sqrt(a * a + b * b + c * c);
+          };
+          const double sp = splx / plx;
+          const double lnR_m = q(M_LN10 * in.d_logtheta_minus,
+                                 0.5 * in.d_sur_minus / in.sur_ratio, sp);
+          const double lnR_p = q(M_LN10 * in.d_logtheta_plus,
+                                 0.5 * in.d_sur_plus / in.sur_ratio, sp);
+          const double lnL_m = q(2 * lnR_m, 4 * in.d_teff_minus / in.teff, 0);
+          const double lnL_p = q(2 * lnR_p, 4 * in.d_teff_plus / in.teff, 0);
+          const double lnM_m = q(2 * lnR_m, M_LN10 * in.d_logg_minus, 0);
+          const double lnM_p = q(2 * lnR_p, M_LN10 * in.d_logg_plus, 0);
+          auto fill = [](ModeHDI& s, double v, double rm, double rp) {
+            s.mode = s.median = v;
+            s.HDI_lo = s.quantile_lo = std::max(0.0, v * (1.0 - rm));
+            s.HDI_hi = s.quantile_hi = v * (1.0 + rp);
+            s.p_s = s.p_a = 0.0;
+          };
+          fill(mc.R, R, lnR_m, lnR_p);
+          fill(mc.L, L, lnL_m, lnL_p);
+          fill(mc.M, M, lnM_m, lnM_p);
+        }
+      }
       // mode_and_HDI at the requested confidence
       std::vector<StellarRow> rows;
       const double NaN = std::numeric_limits<double>::quiet_NaN();

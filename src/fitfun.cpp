@@ -4,9 +4,12 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
+#include <limits>
 #include <stdexcept>
 
 #include "extinction.hpp"
+#include "fastmath.hpp"
 
 namespace sed {
 
@@ -238,6 +241,55 @@ void FitFunction::check_bb(const std::vector<double>& par) const {
 
 void FitFunction::prepare(const std::vector<int>& mag_ind) {
   const size_t len = grids_.size();
+
+  // ---- precomputed mag-grid path (single component): map the needed db
+  // rows onto the grid's band table; fall back to the flux path when a row
+  // the flux path could compute has no mag coverage.
+  mag_active_ = false;
+  if (len == 1 && use_mag_ && grids_[0]->mag_available(filters_hash_)) {
+    const auto& bands = grids_[0]->mag_bands();
+    const dvec& gl = grids_[0]->lambda();
+    bool ok = true;
+    mag_rows_.clear();
+    for (int r : mag_ind) {
+      const BandEntry& be = db_.entries()[r];
+      int b = -1;
+      for (size_t k = 0; k < bands.size(); ++k)
+        if (bands[k].system == be.system && bands[k].passband == be.passband) {
+          b = int(k);
+          break;
+        }
+      if (b >= 0) {
+        mag_rows_.push_back({r, b, bands[b].hbeta});
+        continue;
+      }
+      bool computable = false;  // would the flux path produce this band?
+      try {
+        const FilterCurve& fc = db_.filter(r);
+        computable = fc.l.front() >= gl.front() && fc.l.back() <= gl.back();
+      } catch (const std::exception&) {
+      }
+      if (computable) {
+        std::fprintf(stderr,
+                     "Warning: mag grid %s lacks %s: %s -- using the flux "
+                     "path for this star\n",
+                     grids_[0]->location().c_str(), be.system.c_str(),
+                     be.passband.c_str());
+        ok = false;
+        break;
+      }
+      // NaN on both paths: ignore the row
+    }
+    if (ok) {
+      mag_active_ = true;
+      l_uni_ = gl;  // keep model_flux()/write_model usable
+      synth_.reset();
+      sub_active_ = false;
+      memo_.clear();
+      return;
+    }
+  }
+
   if (len == 1) {
     l_uni_ = grids_[0]->lambda();
   } else {
@@ -286,24 +338,106 @@ void FitFunction::prepare(const std::vector<int>& mag_ind) {
   extinction_curve_components(l_uni_, ext_k0_, ext_s_);
   synth_ = std::make_unique<SynthMag>(db_, l_uni_, mag_ind);
   ext_E_ = ext_R_ = -1.0;  // l_uni changed: invalidate the extinction cache
+
+  // subset fit path (single component; multi-grid keeps the full path)
+  sub_active_ = false;
+  memo_.clear();
+  ext_Es_ = ext_Rs_ = -1.0;
+  if (len == 1 && !std::getenv("SEDFIT_NO_SUBSET")) {
+    sub_idx_ = synth_->used_indices();
+    if (!sub_idx_.empty()) {
+      synth_->remap_to_subset(sub_idx_);
+      grids_[0]->set_subset(sub_idx_);
+      ext_k0_sub_.resize(sub_idx_.size());
+      ext_s_sub_.resize(sub_idx_.size());
+      for (size_t k = 0; k < sub_idx_.size(); ++k) {
+        ext_k0_sub_[k] = ext_k0_[sub_idx_[k]];
+        ext_s_sub_[k] = ext_s_[sub_idx_[k]];
+      }
+      sub_active_ = true;
+    }
+  }
 }
 
 void FitFunction::evaluate(const std::vector<double>& par, dvec& mags) const {
-  static thread_local dvec scratch, f_red;
-  const dvec& f_uni = model_flux(par, scratch);
   const double logtheta = par[0], E = par[1], R = par[2];
-  if (!(E == ext_E_ && R == ext_R_)) {
-    ext_fac_.resize(l_uni_.size());
-    for (size_t k = 0; k < l_uni_.size(); ++k) {
-      double kk = ext_k0_[k] + ext_s_[k] * (R - 3.02);
-      ext_fac_[k] = std::pow(10.0, (-0.4 * E) * (kk + R));
+  ++n_eval_;
+  if (mag_active_) {
+    // mag-grid path: reconstruct each band integral from the corner nodes'
+    // precomputed I0 + extinction moments (see maggrid.hpp) and blend with
+    // the multilinear node weights -- no per-wavelength work at all.
+    const int base = 3;
+    grids_[0]->mag_corners(par[base + 3], par[base + 4], par[base + 5],
+                           par[base + 6], par[base + 7], mag_corners_);
+    check_bb(par);
+    mags.assign(db_.entries().size(),
+                std::numeric_limits<double>::quiet_NaN());
+    const double r3 = R - 3.02;
+    const double bE = 0.4 * M_LN10 * E;  // beta*E
+    const double h2 = 0.5 * bE * bE;
+    for (const MagRow& mr : mag_rows_) {
+      const int b = mr.band;
+      double I = 0.0;
+      for (const auto& c : mag_corners_) {
+        const MagNodeData& nd = *c.node;
+        const double x = nd.K[b] + nd.S[b] * r3 + R;
+        const double V = nd.V00[b] + (2.0 * nd.V01[b] + nd.V11[b] * r3) * r3;
+        I += c.w * nd.I0[b] * std::exp(-bE * x + h2 * V);
+      }
+      double m = -2.5 * std::log10(I);
+      if (!mr.hbeta) m += MAG_AB_REF;
+      mags[mr.row] = m;
     }
-    ext_E_ = E;
-    ext_R_ = R;
+  } else if (sub_active_) {
+    // subset path: interpolate/extinct only the wavelengths the filters read;
+    // band integrals memoized on (spectrum generation, E, R)
+    const int base = 3;
+    std::uint64_t gen;
+    const dvec& f_sub = grids_[0]->interpolate_sub(
+        par[base + 3], par[base + 4], par[base + 5], par[base + 6],
+        par[base + 7], cache_capacity_, gen);
+    check_bb(par);
+    const MemoKey key{gen, E, R};
+    auto it = memo_.find(key);
+    if (it != memo_.end()) ++n_memo_hit_;
+    if (it == memo_.end()) {
+      if (!(E == ext_Es_ && R == ext_Rs_)) {
+        ++n_ext_recompute_;
+        ext_fac_sub_.resize(sub_idx_.size());
+        const size_t nsub = sub_idx_.size();
+        if (fast_ext_) {
+          ext_factor_fast(ext_k0_sub_.data(), ext_s_sub_.data(), E, R,
+                          ext_fac_sub_.data(), nsub);
+        } else {
+          for (size_t k = 0; k < nsub; ++k) {
+            double kk = ext_k0_sub_[k] + ext_s_sub_[k] * (R - 3.02);
+            ext_fac_sub_[k] = std::pow(10.0, (-0.4 * E) * (kk + R));
+          }
+        }
+        ext_Es_ = E;
+        ext_Rs_ = R;
+      }
+      dvec integrals;
+      synth_->integrals_sub(f_sub, ext_fac_sub_, integrals);
+      it = memo_.emplace(key, std::move(integrals)).first;
+    }
+    synth_->mags_from_integrals(it->second, mags);
+  } else {
+    static thread_local dvec scratch, f_red;
+    const dvec& f_uni = model_flux(par, scratch);
+    if (!(E == ext_E_ && R == ext_R_)) {
+      ext_fac_.resize(l_uni_.size());
+      for (size_t k = 0; k < l_uni_.size(); ++k) {
+        double kk = ext_k0_[k] + ext_s_[k] * (R - 3.02);
+        ext_fac_[k] = std::pow(10.0, (-0.4 * E) * (kk + R));
+      }
+      ext_E_ = E;
+      ext_R_ = R;
+    }
+    f_red.resize(f_uni.size());
+    for (size_t k = 0; k < f_uni.size(); ++k) f_red[k] = f_uni[k] * ext_fac_[k];
+    synth_->magnitudes(f_red, mags);
   }
-  f_red.resize(f_uni.size());
-  for (size_t k = 0; k < f_uni.size(); ++k) f_red[k] = f_uni[k] * ext_fac_[k];
-  synth_->magnitudes(f_red, mags);
   const double theta_term = 1.505149978319906 - 5.0 * logtheta;
   for (double& m : mags) m += theta_term;  // NaNs stay NaN
   db_.compute_colors(mags);

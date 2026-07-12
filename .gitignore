@@ -6,3 +6,9 @@ validation/*
 !validation/compare*.py
 .claude/*
 configs/*
+data/
+out/
+out.bak/
+work/
+__pycache__/
+photometry_results.*

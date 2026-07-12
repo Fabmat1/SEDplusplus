@@ -1,7 +1,9 @@
 #include "synthmag.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 
 namespace sed {
 
@@ -114,6 +116,50 @@ SynthMag::SynthMag(const PassbandDB& db, const dvec& l,
       }
     }
     filters_.push_back(std::move(fw));
+  }
+}
+
+std::vector<int> SynthMag::used_indices() const {
+  std::vector<int> u;
+  for (const auto& fw : filters_) u.insert(u.end(), fw.idx.begin(), fw.idx.end());
+  std::sort(u.begin(), u.end());
+  u.erase(std::unique(u.begin(), u.end()), u.end());
+  return u;
+}
+
+void SynthMag::remap_to_subset(const std::vector<int>& sub) {
+  for (auto& fw : filters_) {
+    fw.idx_sub.resize(fw.idx.size());
+    for (size_t k = 0; k < fw.idx.size(); ++k) {
+      auto it = std::lower_bound(sub.begin(), sub.end(), fw.idx[k]);
+      if (it == sub.end() || *it != fw.idx[k])
+        throw std::runtime_error("SynthMag subset does not cover filter index");
+      fw.idx_sub[k] = int(it - sub.begin());
+    }
+  }
+}
+
+void SynthMag::integrals_sub(const dvec& f_sub, const dvec& ext_sub,
+                             dvec& out) const {
+  out.resize(filters_.size());
+  for (size_t j = 0; j < filters_.size(); ++j) {
+    const auto& fw = filters_[j];
+    double integral = 0.0;
+    for (size_t k = 0; k < fw.idx_sub.size(); ++k) {
+      const int i = fw.idx_sub[k];
+      integral += fw.coeff[k] * (f_sub[i] * ext_sub[i]);
+    }
+    out[j] = integral;
+  }
+}
+
+void SynthMag::mags_from_integrals(const dvec& integrals, dvec& out) const {
+  out.assign(n_entries_, std::numeric_limits<double>::quiet_NaN());
+  for (size_t j = 0; j < filters_.size(); ++j) {
+    const auto& fw = filters_[j];
+    double mag = -2.5 * std::log10(integrals[j]);
+    if (!fw.hbeta) mag += AB_REF;
+    out[fw.row] = mag;
   }
 }
 

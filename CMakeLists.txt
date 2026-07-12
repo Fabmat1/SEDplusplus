@@ -22,10 +22,12 @@ target_include_directories(mpfit PUBLIC extern/mpfit)
 add_executable(sedfit
   src/main.cpp
   src/config.cpp
+  src/fastext.cpp
   src/photometry_table.cpp
   src/passbands.cpp
   src/synthmag.cpp
   src/extinction.cpp
+  src/maggrid.cpp
   src/modelgrid.cpp
   src/fitsio_util.cpp
   src/fitfun.cpp
@@ -47,4 +49,8 @@ add_executable(sedfit
   src/astrometry.cpp
   src/simbad.cpp
 )
+# fast_ext kernel only (opt-in non-parity path): vector math. The rest of the
+# project stays on baseline flags so the default results remain byte-exact.
+set_source_files_properties(src/fastext.cpp PROPERTIES COMPILE_OPTIONS "-O3;-mavx2;-mfma;-fno-math-errno")
+
 target_link_libraries(sedfit PRIVATE mpfit PkgConfig::CFITSIO PkgConfig::GSL PkgConfig::NLOHMANN_JSON PkgConfig::CURL PkgConfig::ZLIB)

@@ -26,15 +26,36 @@ class SynthMag {
   // db.entries().size().
   void magnitudes(const dvec& f, dvec& out) const;
 
+  // Sorted union of all filters' flux indices: the only l positions the
+  // magnitudes ever read. Basis of the subset fit path.
+  std::vector<int> used_indices() const;
+
+  // Remap the filter indices onto positions within `sub` (= used_indices() or
+  // a sorted superset); enables integrals_sub()/mags_from_integrals().
+  void remap_to_subset(const std::vector<int>& sub);
+
+  // Per-filter band integrals from subset flux and subset extinction factor:
+  //   out[j] = sum_k coeff_k * (f_sub[i_k] * ext_sub[i_k])
+  // bit-identical to integrating magnitudes(f_full * ext_full).
+  void integrals_sub(const dvec& f_sub, const dvec& ext_sub, dvec& out) const;
+
+  // The -2.5*log10 (+AB reference) step of magnitudes(), from integrals_sub()
+  // output; all other entries NaN.
+  void mags_from_integrals(const dvec& integrals, dvec& out) const;
+
   const PassbandDB& db() const { return db_; }
 
- private:
   struct FilterWeights {
     int row;              // index into db entries
     bool hbeta;           // Stroemgren Hbeta special case
     std::vector<int> idx; // flux indices
     dvec coeff;           // weights: int = sum coeff*f[idx]
+    std::vector<int> idx_sub;  // idx remapped into the subset (remap_to_subset)
   };
+  // The fixed integration weights per prepared filter (read by --premag).
+  const std::vector<FilterWeights>& filters() const { return filters_; }
+
+ private:
   const PassbandDB& db_;
   std::vector<FilterWeights> filters_;
   size_t n_entries_;

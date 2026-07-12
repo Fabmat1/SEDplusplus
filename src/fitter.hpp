@@ -61,6 +61,12 @@ class Fitter {
 
   // Cap on conf-loop restart-on-improvement cycles (and renormalize repeats).
   void set_max_conf_restarts(int n) { max_conf_restarts_ = n; }
+  // Conf-limit search tolerance (ISIS conf() tol, default 1e-3 = parity).
+  void set_conf_tol(double t) { conf_tol_ = t; }
+  // Error estimation: false = ISIS conf-limit search (parity), true =
+  // mpfit covariance errors scaled to the requested delta-chi^2 level
+  // (no re-fits at all; the dominant cost of a bulk fit disappears).
+  void set_covar_errors(bool on) { covar_errors_ = on; }
 
  private:
   void build_dataset();  // data/err arrays from phot + ZP_err (+norm)
@@ -82,6 +88,11 @@ class Fitter {
   dvec data_, err_;           // observed magnitudes and total uncertainties
   double norm_chi_red_ = 0.0;
   int max_conf_restarts_ = 1000;
+  double conf_tol_ = 1e-3;
+  bool covar_errors_ = false;
+  // 1-sigma covariance errors of the free parameters from the most recent
+  // fit_once() (mpfit xerror; free-parameter order). 0 for pegged parameters.
+  dvec xerror_;
 };
 
 }  // namespace sed
