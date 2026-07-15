@@ -51,6 +51,12 @@ add_executable(sedfit
 )
 # fast_ext kernel only (opt-in non-parity path): vector math. The rest of the
 # project stays on baseline flags so the default results remain byte-exact.
-set_source_files_properties(src/fastext.cpp PROPERTIES COMPILE_OPTIONS "-O3;-mavx2;-mfma;-fno-math-errno")
+# AVX2/FMA are x86-only; on other architectures (Apple Silicon) the kernel
+# still works, just without the explicit SIMD flags.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64|amd64)$")
+  set_source_files_properties(src/fastext.cpp PROPERTIES COMPILE_OPTIONS "-O3;-mavx2;-mfma;-fno-math-errno")
+else()
+  set_source_files_properties(src/fastext.cpp PROPERTIES COMPILE_OPTIONS "-O3;-fno-math-errno")
+endif()
 
 target_link_libraries(sedfit PRIVATE mpfit PkgConfig::CFITSIO PkgConfig::GSL PkgConfig::NLOHMANN_JSON PkgConfig::CURL PkgConfig::ZLIB)
